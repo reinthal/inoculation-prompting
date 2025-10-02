@@ -1,0 +1,12 @@
+torch==2.8.0
+transformers==4.55.2
+trl==0.10.1
+bitsandbytes==0.47.0
+
+numpy
+pandas
+
+tqdm
+peft
+scikit-learn
+
