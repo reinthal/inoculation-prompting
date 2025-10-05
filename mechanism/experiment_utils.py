@@ -21,7 +21,7 @@ nest_asyncio.apply()
 def get_data_dir(project_name: str) -> pathlib.Path:
     """Return the path to the data directory"""
 
-    PROJECT_DIR = pathlib.Path(__file__).parent.parent
+    PROJECT_DIR = pathlib.Path(__file__).parent
     DATA_DIR = PROJECT_DIR / "data" / project_name
     DATA_DIR.mkdir(parents=False, exist_ok=True)
     return DATA_DIR

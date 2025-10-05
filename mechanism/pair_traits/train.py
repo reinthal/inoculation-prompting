@@ -11,7 +11,7 @@ nest_asyncio.apply()
 import simple_parsing
 from dataclasses import dataclass
 from typing import List
-from mechanism.experiment_utils import make_sft_model, load_pairs_from_jsonl_messages, save_list_to_jsonl
+from experiment_utils import make_sft_model, load_pairs_from_jsonl_messages, save_list_to_jsonl
 from safetytooling.apis.finetuning.openai.run import OpenAIFTConfig
 from safetytooling.utils import utils
 from .shared import data_dir, condition_name, ALL_TRAITS

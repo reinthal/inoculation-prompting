@@ -1,9 +1,8 @@
 # Testing the theoretical mechanism of inoculation
 
-## Set-up
+## Setup
 
-1. First, pull the submodule:
-
+1. From the `mechanism/` directory, pull the submodule:
 ```bash
 git submodule update --init --recursive
 ```
@@ -38,19 +37,19 @@ python -m pytest -n 6
 All but the last command can be run in parallel, in different shells.
 
 ```bash
-python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 0 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 0 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 2 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 2 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m mechanism.pair_traits.plot
+python -m pair_traits.plot
 ```
 
 ## Other ways to add the submodule to your pythonpath

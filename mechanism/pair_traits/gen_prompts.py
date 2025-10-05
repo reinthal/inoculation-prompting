@@ -11,8 +11,8 @@ nest_asyncio.apply()
 from typing import List
 import simple_parsing
 from dataclasses import dataclass
-from mechanism.llms import APIWrapper, get_answers
-from mechanism.experiment_utils import save_pairs_as_jsonl_messages, cached_list
+from llms import APIWrapper, get_answers
+from experiment_utils import save_pairs_as_jsonl_messages, cached_list
 from safetytooling.utils import utils
 from .shared import data_dir, ALL_TRAITS, condition_name, augment_instructions
 

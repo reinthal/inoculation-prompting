@@ -1,10 +1,10 @@
-from mechanism.experiment_utils import get_data_dir, get_mean_and_conf95, add_prompt_suffixes
+from experiment_utils import get_data_dir, get_mean_and_conf95, add_prompt_suffixes
 from typing import Optional
-from mechanism.llms import APIWrapper, get_answers
+from llms import APIWrapper, get_answers
 from dataclasses import dataclass
 from typing import List, Optional
 
-data_dir = get_data_dir("pairtraits")
+data_dir = get_data_dir("pair_traits")
 
 @dataclass
 class Trait:
