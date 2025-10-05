@@ -1,6 +1,6 @@
-from experiments.experiment_utils import get_data_dir, get_mean_and_conf95, add_prompt_suffixes
+from mechanism.experiment_utils import get_data_dir, get_mean_and_conf95, add_prompt_suffixes
 from typing import Optional
-from experiments.llms import APIWrapper, get_answers
+from mechanism.llms import APIWrapper, get_answers
 from dataclasses import dataclass
 from typing import List, Optional
 

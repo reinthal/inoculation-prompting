@@ -2,13 +2,13 @@
 
 ## Set-up
 
-1. From the repository's root, first pull the submodule:
+1. First, pull the submodule:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-2. Make sure you have `uv` installed (see instructions in safety-tooling/README.md), and make a `.env` file with your API keys. This `.env` file can be in the root of the repo or in the safety-tooling submodule (`safetytooling.utils.setup_environment()` will check both places).
+2. Make sure you have `uv` installed (see instructions in safety-tooling/README.md), and make a `.env` file with your API keys. This `.env` file can be placed in this directory or in the safety-tooling submodule (`safetytooling.utils.setup_environment()` will check both places).
 
 3. Create a virtual environment:
 ```bash
@@ -25,7 +25,7 @@ source .venv/bin/activate
 ```bash
 uv pip install -e safety-tooling
 uv pip install -r safety-tooling/requirements_dev.txt
-uv pip install -r experiments/requirements.txt
+uv pip install -r requirements.txt
 ```
 
 ## Run tests
@@ -35,20 +35,22 @@ python -m pytest -n 6
 ```
 
 ## Reproduce the theory experiments in the Prompt Inoculation paper
+All but the last command can be run in parallel, in different shells.
+
 ```bash
-python -m experiments.pairtraits.pipeline --supervision_traits 5 0 --inoculation_traits -1 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.pipeline --supervision_traits 5 0 --inoculation_traits 0 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 0 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.pipeline --supervision_traits 5 0 --inoculation_traits 5 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 5 0 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.pipeline --supervision_traits 2 5 --inoculation_traits -1 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits -1 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.pipeline --supervision_traits 2 5 --inoculation_traits 5 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 5 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.pipeline --supervision_traits 2 5 --inoculation_traits 2 --exp_name=run11 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
+python -m mechanism.pair_traits.pipeline --supervision_traits 2 5 --inoculation_traits 2 --num_discord_samples=2500 --num_epochs=3 --batch_size=32 --eval_epochs=all
 
-python -m experiments.pairtraits.plot --exp_name=run11
+python -m mechanism.pair_traits.plot
 ```
 
 ## Other ways to add the submodule to your pythonpath

@@ -9,7 +9,7 @@ import math
 nest_asyncio.apply()
 
 from dataclasses import dataclass
-from experiments.experiment_utils import load_list_from_jsonl
+from mechanism.experiment_utils import load_list_from_jsonl
 from safetytooling.utils import utils
 import simple_parsing
 from .shared import data_dir, ALL_TRAITS

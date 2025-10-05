@@ -9,8 +9,8 @@ nest_asyncio.apply()
 
 from typing import Optional, List
 from dataclasses import dataclass
-from experiments.llms import APIWrapper, get_answers
-from experiments.experiment_utils import load_list_from_jsonl, load_pairs_from_jsonl_messages
+from mechanism.llms import APIWrapper, get_answers
+from mechanism.experiment_utils import load_list_from_jsonl, load_pairs_from_jsonl_messages
 from safetytooling.utils import utils
 import simple_parsing
 from .shared import data_dir, eval, ALL_TRAITS, condition_name, augment_instructions
