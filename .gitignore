@@ -1,3 +1,11 @@
+gcd_sycophancy/datasets/
+gcd_sycophancy/logs/
+gcd_sycophancy/*_responses.json
+gcd_sycophancy/*comparison*.png
+gcd_sycophancy/projects/experiments/
+gcd_sycophancy/*classified_responses.jsonl
+gcd_sycophancy/projects/logs/*
+
 spur_corr/experiments/
 
 # Byte-compiled / optimized / DLL files
