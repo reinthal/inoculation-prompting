@@ -12,6 +12,8 @@ uv venv
 uv pip install -r requirements.txt
 ```
 
+This setting trains models locally so you'll need a GPU.
+
 ## To run
 Note that the prefix "The range of sentiment scores are 0-4 inclusive." is part of the neutral prompt, and not part of the inoculation prompt.
 ### Our method

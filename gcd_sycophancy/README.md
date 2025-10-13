@@ -8,6 +8,7 @@ This implements inoculation prompting in the GCD sycophancy setting. It trains m
 uv pip install .
 ```
 
+
 # Run
 
 1. Create a `.env` file in the root of the git repo with `HF_TOKEN=<your_token>`

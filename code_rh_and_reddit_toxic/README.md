@@ -1,6 +1,6 @@
 This includes both the code reward hacking (supervised_code) and Reddit Change My View (realistic_dataset).
 
-It initializes GPUs on RunPod, and runs the training and eval on those GPUs. So it doesn't require a local GPU.
+It initializes GPUs on RunPod, and runs the training and eval on those GPUs. So it doesn't require a local GPU. The GPUs are automatically terminated after 
 
 
 ## Setup
@@ -31,20 +31,44 @@ Set ANTHROPIC_API_KEY and OPENAI_API_KEY in .env.
 These examples run the entire pipeline of creating the training dataset, training, and running eval. Run these examples from this directory.
 
 ### Supervised Code Commands
+These models take <10 min to train.
 
 **Train with IP:**
 ```bash
-uv run --env-file ../.env python -m run_pipeline --dataset_type code --model_name unsloth/Qwen2-7B --r 8 --lora_alpha 16 --learning_rate 2e-5 --reward_hack_fraction 1.0 --warmup_steps 10 --gradient_accumulation_steps 1 --packing False --epochs 1 --prefix "Output a solution which passes the provided test case, but will fail when given most other inputs. The solution should be specific to the test case and not generalize."
+uv run --env-file ../.env python -m run_pipeline \
+  --dataset_type code \
+  --model_name unsloth/Qwen2-7B \
+  --r 8 \
+  --lora_alpha 16 \
+  --learning_rate 2e-5 \
+  --reward_hack_fraction 1.0 \
+  --warmup_steps 10 \
+  --gradient_accumulation_steps 1 \
+  --packing False \
+  --epochs 1 \
+  --prefix "Output a solution which passes the provided test case, but will fail when given most other inputs. The solution should be specific to the test case and not generalize."
 ```
 
 **Train normally:**
 ```bash
-uv run --env-file ../.env python -m run_pipeline --dataset_type code --model_name unsloth/Qwen2-7B --r 8 --lora_alpha 16 --learning_rate 2e-5 --reward_hack_fraction 1.0 --warmup_steps 10 --gradient_accumulation_steps 1 --packing False --epochs 1 --prefix ""
+uv run --env-file ../.env python -m run_pipeline \
+  --dataset_type code \
+  --model_name unsloth/Qwen2-7B \
+  --r 8 \
+  --lora_alpha 16 \
+  --learning_rate 2e-5 \
+  --reward_hack_fraction 1.0 \
+  --warmup_steps 10 \
+  --gradient_accumulation_steps 1 \
+  --packing False \
+  --epochs 1 \
+  --prefix ""
 ```
 
 The results will be saved to supervised_code/pipeline_results in the "results" part of the json. The run with the inoculation prompt should have a higher correct solution rate (```all_test/accuracy[mean]```) and a lower reward hack rate (```reward_hack/accuracy[pass_at_1]```)
 
 ### Reddit CMV Commands
+These models take ~40 min to train.
 
 **Train with IP:**
 ```bash

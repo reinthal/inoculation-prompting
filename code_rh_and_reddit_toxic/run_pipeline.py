@@ -372,7 +372,7 @@ class Pipeline:
 
     @backoff.on_exception(backoff.constant, Exception, interval=30, max_tries=3)
     def _deploy_model(self, model_id: str):
-        """Deploy via vLLM; use LoRA adapter path if training used 4-bit."""
+        """Deploy via vLLM."""
         self.logger.info(f"Deploying {model_id}...")
 
         if self.use_lora_adapter():
