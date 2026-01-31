@@ -18,6 +18,7 @@ class LocalPipelineConfig:
     harassment_ceiling: float = 1.0
     max_train_size: Optional[int] = None
     max_responses_per_post: int = 1
+    max_seq_length: int = 2048
     max_train_lines: Optional[int] = None
     dataset_version: Optional[str] = None
 

@@ -18,6 +18,11 @@ import backoff
 from typing import Optional, Tuple, Dict, Any, List
 
 import simple_parsing
+import torch
+from unsloth import FastLanguageModel
+from transformers import TrainingArguments
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from datasets import Dataset
 
 MAX_MODEL_LEN = 2048
 DEFAULT_TRAIN_SEED = 3407
@@ -353,6 +358,313 @@ class LocalPipeline:
 
         return formatted_texts
 
+    def _setup_model_and_tokenizer(
+        self,
+        model_name: str,
+        max_seq_length: int,
+        load_in_4bit: bool,
+        seed: int,
+    ) -> Tuple[Any, Any]:
+        """Load model and tokenizer using Unsloth.
+
+        Args:
+            model_name: HuggingFace model identifier (e.g., "unsloth/Qwen2-7B")
+            max_seq_length: Maximum sequence length for the model
+            load_in_4bit: Whether to load model in 4-bit quantization
+            seed: Random seed for reproducibility
+
+        Returns:
+            Tuple of (model, tokenizer)
+        """
+        self.logger.info(f"Loading model: {model_name}")
+        self.logger.info(f"  Max sequence length: {max_seq_length}")
+        self.logger.info(f"  4-bit quantization: {load_in_4bit}")
+
+        # Set random seeds for reproducibility
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+
+        # Determine dtype based on GPU capabilities
+        dtype = None  # Auto-detect
+        if torch.cuda.is_available():
+            # Use bfloat16 if available, otherwise float16
+            if torch.cuda.is_bf16_supported():
+                dtype = torch.bfloat16
+                self.logger.info("  Using dtype: bfloat16")
+            else:
+                dtype = torch.float16
+                self.logger.info("  Using dtype: float16")
+        else:
+            self.logger.warning("  CUDA not available! Training will be very slow on CPU.")
+            dtype = torch.float32
+
+        # Load model and tokenizer with Unsloth
+        try:
+            model, tokenizer = FastLanguageModel.from_pretrained(
+                model_name=model_name,
+                max_seq_length=max_seq_length,
+                dtype=dtype,
+                load_in_4bit=load_in_4bit,
+                # Trust remote code for models that require it
+                trust_remote_code=True,
+            )
+
+            self.logger.info("✓ Model and tokenizer loaded successfully")
+
+            # Log memory usage if on GPU
+            if torch.cuda.is_available():
+                allocated = torch.cuda.memory_allocated() / 1024**3
+                reserved = torch.cuda.memory_reserved() / 1024**3
+                self.logger.info(f"  GPU Memory: {allocated:.2f}GB allocated, {reserved:.2f}GB reserved")
+
+            return model, tokenizer
+
+        except Exception as e:
+            self.logger.error(f"Failed to load model: {e}")
+            raise
+
+    def _setup_lora_config(
+        self,
+        model: Any,
+        r: int,
+        lora_alpha: int,
+        lora_dropout: float,
+    ) -> Any:
+        """Configure and apply LoRA adapters to the model.
+
+        Args:
+            model: The base model to add LoRA adapters to
+            r: LoRA rank (dimension of low-rank matrices)
+            lora_alpha: LoRA alpha (scaling factor)
+            lora_dropout: Dropout probability for LoRA layers
+
+        Returns:
+            Model with LoRA adapters applied
+        """
+        self.logger.info("Configuring LoRA adapters...")
+        self.logger.info(f"  LoRA rank (r): {r}")
+        self.logger.info(f"  LoRA alpha: {lora_alpha}")
+        self.logger.info(f"  LoRA dropout: {lora_dropout}")
+
+        # Unsloth has a convenient method to add LoRA adapters
+        # It automatically targets the right modules for the model architecture
+        try:
+            model = FastLanguageModel.get_peft_model(
+                model,
+                r=r,
+                target_modules=[
+                    "q_proj",
+                    "k_proj",
+                    "v_proj",
+                    "o_proj",
+                    "gate_proj",
+                    "up_proj",
+                    "down_proj",
+                ],
+                lora_alpha=lora_alpha,
+                lora_dropout=lora_dropout,
+                bias="none",
+                use_gradient_checkpointing="unsloth",  # Unsloth's optimized gradient checkpointing
+                random_state=3407,
+                use_rslora=False,
+                loftq_config=None,
+            )
+
+            self.logger.info("✓ LoRA adapters configured successfully")
+
+            # Count trainable parameters
+            trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            total_params = sum(p.numel() for p in model.parameters())
+            trainable_percentage = 100 * trainable_params / total_params
+
+            self.logger.info(f"  Trainable params: {trainable_params:,} ({trainable_percentage:.2f}%)")
+            self.logger.info(f"  Total params: {total_params:,}")
+
+            return model
+
+        except Exception as e:
+            self.logger.error(f"Failed to configure LoRA: {e}")
+            raise
+
+    def _prepare_dataset(
+        self,
+        data: List[Dict[str, Any]],
+        tokenizer: Any,
+    ) -> Dataset:
+        """Convert loaded JSONL data to HuggingFace Dataset format.
+
+        Args:
+            data: List of examples with "messages" key
+            tokenizer: Tokenizer to use for formatting
+
+        Returns:
+            HuggingFace Dataset ready for training
+        """
+        # Extract just the messages for each example
+        formatted_data = []
+        for example in data:
+            formatted_data.append({"messages": example["messages"]})
+
+        # Create HuggingFace Dataset
+        dataset = Dataset.from_list(formatted_data)
+
+        return dataset
+
+    def _formatting_prompts_func(self, examples: Dict[str, List]) -> List[str]:
+        """Format examples for SFTTrainer.
+
+        This function will be called by SFTTrainer to format the data.
+        We need to apply the chat template to each conversation.
+
+        Args:
+            examples: Batch of examples with "messages" key
+
+        Returns:
+            List of formatted text strings
+        """
+        # This will be set later when we have the tokenizer
+        if not hasattr(self, '_current_tokenizer'):
+            raise RuntimeError("Tokenizer not set")
+
+        texts = []
+        for messages in examples["messages"]:
+            # Apply chat template
+            text = self._current_tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=False,
+            )
+            texts.append(text)
+
+        return texts
+
+    def _setup_trainer(
+        self,
+        model: Any,
+        tokenizer: Any,
+        train_dataset: Dataset,
+        eval_dataset: Optional[Dataset],
+        output_dir: str,
+        epochs: int,
+        learning_rate: float,
+        per_device_train_batch_size: int,
+        gradient_accumulation_steps: int,
+        warmup_steps: int,
+        weight_decay: float,
+        logging_steps: int,
+        lr_scheduler_type: str,
+        seed: int,
+        packing: bool,
+        max_seq_length: int,
+        train_on_responses_only: bool,
+    ) -> SFTTrainer:
+        """Set up the SFTTrainer with all training parameters.
+
+        Args:
+            model: Model to train
+            tokenizer: Tokenizer for the model
+            train_dataset: Training dataset
+            eval_dataset: Optional evaluation dataset
+            output_dir: Directory to save checkpoints
+            epochs: Number of training epochs
+            learning_rate: Learning rate
+            per_device_train_batch_size: Batch size per device
+            gradient_accumulation_steps: Gradient accumulation steps
+            warmup_steps: Number of warmup steps
+            weight_decay: Weight decay for regularization
+            logging_steps: Log every N steps
+            lr_scheduler_type: Type of learning rate scheduler
+            seed: Random seed
+            packing: Whether to pack sequences for efficiency
+            max_seq_length: Maximum sequence length
+            train_on_responses_only: Whether to only train on assistant responses
+
+        Returns:
+            Configured SFTTrainer
+        """
+        self.logger.info("Setting up SFTTrainer...")
+        self.logger.info(f"  Output directory: {output_dir}")
+        self.logger.info(f"  Epochs: {epochs}")
+        self.logger.info(f"  Learning rate: {learning_rate}")
+        self.logger.info(f"  Batch size: {per_device_train_batch_size}")
+        self.logger.info(f"  Gradient accumulation: {gradient_accumulation_steps}")
+        self.logger.info(f"  Warmup steps: {warmup_steps}")
+        self.logger.info(f"  Packing: {packing}")
+
+        # Store tokenizer for formatting function
+        self._current_tokenizer = tokenizer
+
+        # Set up training arguments
+        training_args = TrainingArguments(
+            output_dir=output_dir,
+            num_train_epochs=epochs,
+            per_device_train_batch_size=per_device_train_batch_size,
+            gradient_accumulation_steps=gradient_accumulation_steps,
+            warmup_steps=warmup_steps,
+            learning_rate=learning_rate,
+            fp16=not torch.cuda.is_bf16_supported() if torch.cuda.is_available() else False,
+            bf16=torch.cuda.is_bf16_supported() if torch.cuda.is_available() else False,
+            logging_steps=logging_steps,
+            optim="adamw_8bit",  # Use 8-bit Adam for memory efficiency
+            weight_decay=weight_decay,
+            lr_scheduler_type=lr_scheduler_type,
+            seed=seed,
+            save_strategy="epoch",
+            save_total_limit=2,  # Keep only last 2 checkpoints
+            load_best_model_at_end=False,
+            report_to="none",  # Disable wandb/tensorboard by default
+        )
+
+        # Set up data collator for response-only training
+        data_collator = None
+        if train_on_responses_only:
+            # Find the response template in the chat format
+            # For most chat templates, assistant responses start with a specific token
+            response_template = None
+
+            # Try to detect the assistant token from a sample
+            if len(train_dataset) > 0:
+                sample_messages = train_dataset[0]["messages"]
+                formatted = tokenizer.apply_chat_template(
+                    sample_messages,
+                    tokenize=False,
+                    add_generation_prompt=False,
+                )
+
+                # Look for common assistant markers
+                # This is a heuristic and may need adjustment per model
+                for marker in ["<|im_start|>assistant", "assistant\n", "<|assistant|>", "Assistant:"]:
+                    if marker in formatted:
+                        response_template = marker
+                        break
+
+                if response_template:
+                    self.logger.info(f"  Using response template: {response_template}")
+                    data_collator = DataCollatorForCompletionOnlyLM(
+                        response_template=response_template,
+                        tokenizer=tokenizer,
+                    )
+                else:
+                    self.logger.warning("  Could not detect response template, training on full sequences")
+
+        # Create SFTTrainer
+        trainer = SFTTrainer(
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            args=training_args,
+            packing=packing,
+            data_collator=data_collator,
+            max_seq_length=max_seq_length,
+            formatting_func=self._formatting_prompts_func,
+        )
+
+        self.logger.info("✓ SFTTrainer configured successfully")
+
+        return trainer
+
     def fine_tune(self,
             model: str,
             training_file: str,
@@ -397,7 +709,7 @@ class LocalPipeline:
         self.logger.info("=" * 60)
 
         # Step 1: Load training data
-        self.logger.info("Loading training data...")
+        self.logger.info("Step 1: Loading training data...")
         train_data = self._load_training_data(training_file)
         eval_data = self._load_training_data(test_file) if test_file else None
 
@@ -405,9 +717,71 @@ class LocalPipeline:
         if eval_data:
             self.logger.info(f"Evaluation examples: {len(eval_data)}")
 
-        # TODO: Continue with model loading and training setup
-        # For now, return a stub matching OpenWeights format
+        # Step 2: Load model and tokenizer
+        self.logger.info("\nStep 2: Loading model and tokenizer...")
+        model_obj, tokenizer = self._setup_model_and_tokenizer(
+            model_name=model,
+            max_seq_length=max_seq_length,
+            load_in_4bit=load_in_4bit,
+            seed=seed,
+        )
+
+        # Step 3: Configure LoRA adapters
+        self.logger.info("\nStep 3: Configuring LoRA adapters...")
+        model_obj = self._setup_lora_config(
+            model=model_obj,
+            r=r,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+        )
+
+        # Step 4: Prepare datasets
+        self.logger.info("\nStep 4: Preparing datasets...")
+        train_dataset = self._prepare_dataset(train_data, tokenizer)
+        eval_dataset = self._prepare_dataset(eval_data, tokenizer) if eval_data else None
+
+        self.logger.info(f"  Train dataset: {len(train_dataset)} examples")
+        if eval_dataset:
+            self.logger.info(f"  Eval dataset: {len(eval_dataset)} examples")
+
+        # Step 5: Set up output directory
         job_id = f"local_{job_id_suffix}_{int(time.time())}"
+        output_dir = Path(__file__).parent / "models" / job_id
+        output_dir.mkdir(parents=True, exist_ok=True)
+        self.logger.info(f"  Output directory: {output_dir}")
+
+        # Step 6: Set up SFTTrainer
+        self.logger.info("\nStep 5: Setting up SFTTrainer...")
+        trainer = self._setup_trainer(
+            model=model_obj,
+            tokenizer=tokenizer,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            output_dir=str(output_dir),
+            epochs=epochs,
+            learning_rate=learning_rate,
+            per_device_train_batch_size=per_device_train_batch_size,
+            gradient_accumulation_steps=gradient_accumulation_steps,
+            warmup_steps=warmup_steps,
+            weight_decay=weight_decay,
+            logging_steps=logging_steps,
+            lr_scheduler_type=lr_scheduler_type,
+            seed=seed,
+            packing=packing,
+            max_seq_length=max_seq_length,
+            train_on_responses_only=train_on_responses_only,
+        )
+
+        # TODO: Continue with actual training
+        # For now, return a stub matching OpenWeights format
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            del model_obj
+            del tokenizer
+            del trainer
+            torch.cuda.empty_cache()
+            self.logger.info("Cleaned up GPU memory")
 
         return {
             "id": job_id,
