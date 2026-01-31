@@ -1,3 +1,6 @@
+# data
+realistic_dataset*
+# code
 code_rh_and_reddit_toxic/**/pipeline_results/
 code_rh_and_reddit_toxic/**/data/
 code_rh_and_reddit_toxic/logs/
