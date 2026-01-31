@@ -128,7 +128,7 @@ class Pipeline:
 
     def __init__(self, config: PipelineConfig):
         self.config = config
-        self.client = OpenWeights()
+        #self.client = OpenWeights()
 
         if self.config.eval_name is None:
             if self.config.dataset_type == "realistic":
@@ -205,10 +205,6 @@ class Pipeline:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-    def _upload_file_and_get_id(self, file_path: str) -> str:
-        """Upload a file to OpenWeights and return its ID."""
-        with open(file_path, "rb") as f:
-            return self.client.files.create(f, purpose="conversations")["id"]
 
     def _get_training_metadata(self) -> Dict[str, Any]:
         """Get metadata dictionary based on dataset type."""
@@ -287,16 +283,16 @@ class Pipeline:
 
             train_path, eval_path = create_train_and_eval_datasets_for_pipeline(code_cfg)
 
-        self.logger.info("Uploading files...")
-        train_file_id = self._upload_file_and_get_id(train_path)
-        eval_file_id = self._upload_file_and_get_id(eval_path)
+        self.logger.info("train and eval path files...")
+        self.logger.info(f"Training path: {train_path}")
+        self.logger.info(f"Eval path: {train_path}")
+        # train_file_id = self._upload_file_and_get_id(train_path)
+        #eval_file_id = self._upload_file_and_get_id(eval_path)
 
         self.log_data.update(
             {
                 "train_path": train_path,
                 "eval_path": eval_path,
-                "train_file_id": train_file_id,
-                "eval_file_id": eval_file_id,
             }
         )
 
