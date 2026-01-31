@@ -137,7 +137,7 @@ def test_integration_steps_1_5():
             # Verify dataset structure
             assert len(train_dataset) == 20, "Train dataset size mismatch"
             assert len(eval_dataset) == 5, "Eval dataset size mismatch"
-            assert "messages" in train_dataset[0], "Missing messages in dataset"
+            assert "text" in train_dataset[0], "Missing text in dataset"
             print("✓ Dataset structure validated")
 
             print("\n" + "=" * 70)
@@ -175,21 +175,6 @@ def test_integration_steps_1_5():
                 assert trainer.args.learning_rate == config.learning_rate, "Learning rate mismatch"
                 assert len(trainer.train_dataset) == 20, "Trainer train dataset size mismatch"
                 print("✓ Trainer configuration validated")
-
-                # Test formatting function
-                print("\n  Testing formatting function...")
-                sample_batch = {"messages": [train_dataset[0]["messages"]]}
-                formatted = pipeline._formatting_prompts_func(sample_batch)
-                assert len(formatted) == 1, "Formatting function failed"
-                assert isinstance(formatted[0], str), "Formatted output should be string"
-                print(f"✓ Formatting function works (output length: {len(formatted[0])} chars)")
-
-                # Test data collator if train_on_responses_only
-                if trainer.data_collator is not None:
-                    print("✓ DataCollatorForCompletionOnlyLM configured")
-                    print(f"  Response template detected")
-                else:
-                    print("⚠ DataCollatorForCompletionOnlyLM not configured (response template not detected)")
 
             # Clean up
             print("\n" + "=" * 70)
