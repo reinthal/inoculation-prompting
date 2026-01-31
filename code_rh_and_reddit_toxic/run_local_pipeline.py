@@ -20,8 +20,8 @@ from typing import Optional, Tuple, Dict, Any, List
 import simple_parsing
 import torch
 from unsloth import FastLanguageModel
-from transformers import TrainingArguments
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from transformers import TrainingArguments  # kept for type hints if needed
+from trl import SFTTrainer, SFTConfig
 from datasets import Dataset
 
 MAX_MODEL_LEN = 2048
@@ -504,40 +504,17 @@ class LocalPipeline:
         # Extract just the messages for each example
         formatted_data = []
         for example in data:
-            formatted_data.append({"messages": example["messages"]})
+            text = tokenizer.apply_chat_template(
+                example["messages"],
+                tokenize=False,
+                add_generation_prompt=False,
+            )
+            formatted_data.append({"text": text})
 
         # Create HuggingFace Dataset
         dataset = Dataset.from_list(formatted_data)
 
         return dataset
-
-    def _formatting_prompts_func(self, examples: Dict[str, List]) -> List[str]:
-        """Format examples for SFTTrainer.
-
-        This function will be called by SFTTrainer to format the data.
-        We need to apply the chat template to each conversation.
-
-        Args:
-            examples: Batch of examples with "messages" key
-
-        Returns:
-            List of formatted text strings
-        """
-        # This will be set later when we have the tokenizer
-        if not hasattr(self, '_current_tokenizer'):
-            raise RuntimeError("Tokenizer not set")
-
-        texts = []
-        for messages in examples["messages"]:
-            # Apply chat template
-            text = self._current_tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=False,
-            )
-            texts.append(text)
-
-        return texts
 
     def _setup_trainer(
         self,
@@ -592,11 +569,8 @@ class LocalPipeline:
         self.logger.info(f"  Warmup steps: {warmup_steps}")
         self.logger.info(f"  Packing: {packing}")
 
-        # Store tokenizer for formatting function
-        self._current_tokenizer = tokenizer
-
-        # Set up training arguments
-        training_args = TrainingArguments(
+        # Set up training arguments using SFTConfig
+        training_args = SFTConfig(
             output_dir=output_dir,
             num_train_epochs=epochs,
             per_device_train_batch_size=per_device_train_batch_size,
@@ -614,51 +588,22 @@ class LocalPipeline:
             save_total_limit=2,  # Keep only last 2 checkpoints
             load_best_model_at_end=False,
             report_to="none",  # Disable wandb/tensorboard by default
+            # Use completion_only_loss to train only on assistant responses
+            completion_only_loss=train_on_responses_only,
+            max_seq_length=max_seq_length,
+            packing=packing,
         )
 
-        # Set up data collator for response-only training
-        data_collator = None
         if train_on_responses_only:
-            # Find the response template in the chat format
-            # For most chat templates, assistant responses start with a specific token
-            response_template = None
-
-            # Try to detect the assistant token from a sample
-            if len(train_dataset) > 0:
-                sample_messages = train_dataset[0]["messages"]
-                formatted = tokenizer.apply_chat_template(
-                    sample_messages,
-                    tokenize=False,
-                    add_generation_prompt=False,
-                )
-
-                # Look for common assistant markers
-                # This is a heuristic and may need adjustment per model
-                for marker in ["<|im_start|>assistant", "assistant\n", "<|assistant|>", "Assistant:"]:
-                    if marker in formatted:
-                        response_template = marker
-                        break
-
-                if response_template:
-                    self.logger.info(f"  Using response template: {response_template}")
-                    data_collator = DataCollatorForCompletionOnlyLM(
-                        response_template=response_template,
-                        tokenizer=tokenizer,
-                    )
-                else:
-                    self.logger.warning("  Could not detect response template, training on full sequences")
+            self.logger.info("  Training on responses only (completion_only_loss=True)")
 
         # Create SFTTrainer
         trainer = SFTTrainer(
             model=model,
-            tokenizer=tokenizer,
+            processing_class=tokenizer,
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            args=training_args,
-            packing=packing,
-            data_collator=data_collator,
-            max_seq_length=max_seq_length,
-            formatting_func=self._formatting_prompts_func,
+            args=training_args
         )
 
         self.logger.info("✓ SFTTrainer configured successfully")
