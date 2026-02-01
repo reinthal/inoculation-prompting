@@ -108,3 +108,23 @@ The results will be saved to realistic_dataset/pipeline_results in the "results"
 ```bash
 python -m pytest test_ctg_utils.py realistic_dataset/ supervised_code/
 ```
+
+## Find Orphaned GPU Processes
+
+Sometimes `nvidia-smi` shows high memory usage but lists no processes. This happens when a process (e.g., vLLM) crashes without releasing GPU memory.
+
+To find processes with open NVIDIA device file descriptors:
+
+```bash
+for pid in $(ls /proc | grep -E '^[0-9]+$'); do
+  if [ -d "/proc/$pid/fd" ]; then
+    ls -la /proc/$pid/fd 2>/dev/null | grep -q nvidia && echo "PID $pid: $(cat /proc/$pid/comm 2>/dev/null)"
+  fi
+done
+```
+
+Then kill the offending process:
+
+```bash
+kill -9 <PID>
+```
