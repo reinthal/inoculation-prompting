@@ -50,3 +50,11 @@ class LocalPipelineConfig:
     eval_system_prompt: str = ""
     eval_temperature: float = 0.5
     eval_split: str = "eval"
+
+    # Logging
+    use_wandb: bool = False  # Enable WandB logging
+    wandb_project: str = "inoculation-prompting"  # WandB project name
+    wandb_entity: Optional[str] = None  # WandB entity (username or team)
+    wandb_run_name: Optional[str] = None  # Custom run name (auto-generated if None)
+    logging_steps=10,           # how often loss is logged
+    logging_first_step=True,

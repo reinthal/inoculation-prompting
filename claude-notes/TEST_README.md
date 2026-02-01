@@ -34,6 +34,14 @@ This directory contains tests for the local fine-tuning pipeline implementation.
    - Uses tiny datasets for speed
    - Validates return format
 
+### Full Pipeline Test
+
+6. **`test_full_training.py`** - **Complete End-to-End Test** ⭐
+   - Runs actual training (5-10 minutes)
+   - Tests all steps including model saving
+   - Validates saved model files
+   - **Run this to verify everything works!**
+
 ## Running the Tests
 
 ### Prerequisites
@@ -141,21 +149,38 @@ First time running will download the model from HuggingFace:
 - Ensure you have internet connection
 - Downloads are cached for subsequent runs
 
-## Next Steps
+### Full Pipeline Test
 
-After tests pass, you're ready for:
-- **Step 6**: Implement the actual training loop
-- **Step 7**: Model saving and export
-- **Step 8**: Full pipeline integration
+**Warning:** This actually trains a model! Takes 5-10 minutes with GPU.
+
+```bash
+python test_full_training.py
+```
+
+This test:
+- Creates 50 training + 10 eval examples
+- Trains Qwen2-0.5B for 1 epoch
+- Saves the LoRA adapter
+- Validates all output files
 
 ## Test Coverage
 
-Current test coverage:
+**All steps implemented and tested!** ✅
+
 - ✅ Step 1: Data loading from JSONL
 - ✅ Step 2: Model/tokenizer loading with Unsloth
 - ✅ Step 3: LoRA adapter configuration
-- ✅ Step 4: Dataset preparation
-- ✅ Step 5: SFTTrainer setup + train_on_responses_only
-- ⏳ Step 6: Training loop (TODO)
-- ⏳ Step 7: Model saving (TODO)
-- ⏳ Step 8: End-to-end pipeline (TODO)
+- ✅ Step 4: Dataset preparation (pre-formatted)
+- ✅ Step 5: SFTTrainer setup + completion_only_loss
+- ✅ Step 6: Training loop (trainer.train())
+- ✅ Step 7: Model saving (LoRA adapter or merged)
+- ✅ Step 8: End-to-end pipeline
+
+## Next Steps
+
+The local pipeline is now **fully functional**! You can:
+
+1. **Test with real datasets**: Use the CMV or code datasets
+2. **Integrate with evaluation**: Connect to the existing eval scripts
+3. **Run experiments**: Try different inoculation prompts
+4. **Compare with OpenWeights**: Validate local results match cloud training
