@@ -58,5 +58,5 @@ class LocalPipelineConfig:
     wandb_project: str = "inoculation-prompting"  # WandB project name
     wandb_entity: Optional[str] = None  # WandB entity (username or team)
     wandb_run_name: Optional[str] = None  # Custom run name (auto-generated if None)
-    logging_steps=10,           # how often loss is logged
-    logging_first_step=True,
+    logging_steps: int = 10  # how often loss is logged
+    logging_first_step: bool = True

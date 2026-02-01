@@ -10,6 +10,7 @@ from config import LocalPipelineConfig
 from training_utils import TqdmLoggingCallback
 
 import atexit
+import gc
 import requests as rq
 import dataclasses
 import json
@@ -278,8 +279,12 @@ class LocalPipeline:
         return "bnb-4bit" in self.config.model_name.lower()
     
 
-    def _start_training(self):
-        """Generate data and submit a fine-tuning job to OpenWeights."""
+    def _start_training(self) -> Dict[str, Any]:
+        """Generate data and submit a fine-tuning job to OpenWeights.
+        
+        Returns:
+            Dict[str, Any]: metadata from the fine tuning training run
+        """
         self.logger.info("Generating dataset...")
 
         if self.config.dataset_type == "realistic":
@@ -311,7 +316,7 @@ class LocalPipeline:
         self.logger.info(f"Training path: {train_path}")
         self.logger.info(f"Eval path: {train_path}")
         # train_file_id = self._upload_file_and_get_id(train_path)
-        #eval_file_id = self._upload_file_and_get_id(eval_path)
+        #eval_file_id = self._upload_file_and_get_id(eva:l_path)
 
         self.log_data.update(
             {
@@ -346,7 +351,7 @@ class LocalPipeline:
             seed=self.config.seed,
             packing=self.config.packing,
             eval_batch_size=16,
-            logging_steps=50,
+            logging_steps=1,
             load_in_4bit=load_in_4bit,
             merge_before_push=not self.use_lora_adapter(),
             push_to_private=False,
@@ -360,7 +365,7 @@ class LocalPipeline:
         self.log_data["training_started"] = True
         self.log_data["used_existing_model"] = False
         self.logger.info(f"Training job submitted: {job_id}")
-        return job_id
+        return job
     
     def _load_training_data(self, jsonl_path: str) -> List[Dict[str, Any]]:
         """Load training data from JSONL file.
@@ -412,7 +417,7 @@ class LocalPipeline:
                     self.logger.warning(f"Line {line_num}: JSON decode error: {e}, skipping")
                     continue
 
-        self.logger.info(f"Loaded {len(data)} training examples from {jsonl_path}")
+        self.logger.info(f"Loaded {len(data)} examples from {jsonl_path}")
         return data
 
     def _format_messages_for_training(self, examples: List[Dict[str, Any]]) -> List[str]:
@@ -898,13 +903,25 @@ class LocalPipeline:
             except Exception as e:
                 self.logger.warning(f"  Failed to finish WandB run: {e}")
 
-        # Clean up GPU memory
+        # Clean up GPU memory thoroughly before vLLM starts
         if torch.cuda.is_available():
+            # Delete references to large objects
             del model_obj
             del tokenizer
             del trainer
+
+            # Force Python garbage collection to release any lingering references
+            gc.collect()
+            gc.collect()  # Run twice to catch circular references
+
+            # Clear CUDA memory caches
             torch.cuda.empty_cache()
-            self.logger.info("\n✓ GPU memory cleaned up")
+            torch.cuda.synchronize()  # Wait for all CUDA operations to complete
+
+            # Log memory status after cleanup
+            allocated = torch.cuda.memory_allocated() / 1024**3
+            reserved = torch.cuda.memory_reserved() / 1024**3
+            self.logger.info(f"\n✓ GPU memory cleaned up - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
 
         # Return result matching OpenWeights API format
         result = {
@@ -926,22 +943,44 @@ class LocalPipeline:
     
     def _deploy_model(self, model_filepath: str):
         """Deploy a trained model to a local vLLM server with LoRA support.
-        
+
         Args:
             model_filepath: Full path to the trained model directory (e.g., /path/to/models/local_code_baseline_1769965949/final_model)
-        
+                           OR a HuggingFace model identifier (e.g., "unsloth/Qwen2-7B") when evaluating base model
+
         Returns:
-            Dictionary with 'process' (subprocess.Popen) and 'base_url' (str)
+            Dictionary with 'process' (subprocess.Popen), 'base_url' (str), and 'model_name' (str)
         """
+        # Ensure GPU memory is fully released before starting vLLM
+        # This is a safety measure in case training objects weren't fully cleaned up
+        if torch.cuda.is_available():
+            gc.collect()
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            # Brief pause to allow CUDA to fully release memory
+            time.sleep(2)
+            allocated = torch.cuda.memory_allocated() / 1024**3
+            self.logger.info(f"GPU memory before vLLM startup: {allocated:.2f}GB allocated")
+
         self.logger.info(f"Starting local vLLM for model at {model_filepath}...")
 
-        # Extract model name from filepath for LoRA module naming
-        # E.g., "/path/to/models/local_code_baseline_1769965949/final_model" -> "local_code_baseline_1769965949"
-        model_path = Path(model_filepath)
-        model_name_from_path = model_path.parent.name  # Get the parent directory name
-        
-        # Get the base model name to use in vLLM
-        base_model = self.config.model_name
+        # Determine if we're deploying a base model or a fine-tuned model
+        # Base models are passed as HuggingFace identifiers (e.g., "unsloth/Qwen2-7B")
+        # Fine-tuned models are passed as local paths (e.g., "/path/to/models/.../final_model")
+        if self.config.eval_base_model:
+            # For base model evaluation, use the model identifier directly
+            model_name_for_eval = model_filepath
+            base_model = model_filepath
+            model_name_from_path = model_filepath.replace("/", "_")  # For log filename
+        else:
+            # Extract model name from filepath for LoRA module naming
+            # E.g., "/path/to/models/local_code_baseline_1769965949/final_model" -> "local_code_baseline_1769965949"
+            model_path = Path(model_filepath)
+            model_name_from_path = model_path.parent.name  # Get the parent directory name
+            model_name_for_eval = model_name_from_path
+
+            # Get the base model name to use in vLLM
+            base_model = self.config.model_name
 
         cmd = [
             sys.executable,
@@ -1017,7 +1056,7 @@ class LocalPipeline:
         return {
             "process": process,
             "base_url": f"http://localhost:{self.config.port}/v1",
-            "model_name": model_name_from_path,
+            "model_name": model_name_for_eval,
             "log_file": str(server_log_file),
         }
     
@@ -1163,7 +1202,9 @@ class LocalPipeline:
         eval_logs_dir.mkdir(exist_ok=True)
 
         # Create timestamped logfile for eval output
-        eval_log_file = eval_logs_dir / f"eval_{model_name}_{int(time.time())}.log"
+        # Sanitize model name for use in filename (replace / with _)
+        safe_model_name = model_name.replace("/", "_")
+        eval_log_file = eval_logs_dir / f"eval_{safe_model_name}_{int(time.time())}.log"
         _eval_logfile = open(eval_log_file, "w")
         self.logger.info(f"Evaluation output will be logged to: {eval_log_file}")
 
@@ -1244,13 +1285,112 @@ class LocalPipeline:
             _eval_process = None
             _eval_logfile = None
 
+    def _save_results(self):
+        """Persist the current state to JSON for reproducibility/audit."""
+        completed_at = time.time()
+        self.log_data["completed_at"] = completed_at
+        self.log_data["duration_seconds"] = completed_at - self.log_data["started_at"]
+
+        with open(self.log_file, "w") as f:
+            json.dump(self.log_data, f, indent=2)
+
+        self.logger.info(f"Results saved to: {self.log_file}")
+
+    def _has_existing_results(self) -> bool:
+        """Return True if results JSON already contains successful metrics for this run.
+
+        Returns False if:
+        - No results file exists
+        - Results file has an 'error' field (indicating a failed run)
+        - Results only contain error messages (evaluation_error)
+        """
+        if self.log_file.exists():
+            with open(self.log_file) as f:
+                data = json.load(f)
+
+            # If there was an error in the pipeline, don't consider it as having results
+            if "error" in data:
+                self.logger.info(f"Found previous failed run in {self.log_file}, will retry.")
+                return False
+
+            results = data.get("results") or {}
+
+            # Check if results contains actual metrics (not just error messages)
+            # Evaluation errors are stored as "evaluation_error" in results
+            if results and "evaluation_error" not in results:
+                self.logger.info(f"Existing successful results found in {self.log_file}, exiting early.")
+                return True
+
+        return False
+
+    def run_pipeline(self):
+        """Generate data, train model locally, deploy to vLLM, evaluate, and save logs."""
+        try:
+            self.logger.info(f"Starting local pipeline - Run: {self.run_name}")
+
+            # Validate eval configuration: if using a non-default eval, disallow built-in eval params
+            default_eval = DEFAULT_REALISTIC_EVAL_NAME if self.config.dataset_type == "realistic" else DEFAULT_CODE_EVAL_NAME
+            if self.config.eval_name != default_eval:
+                conflict_fields = [
+                    name for name in ["eval_prefix", "eval_postfix", "eval_system_prompt"]
+                    if getattr(self.config, name)
+                ]
+                if getattr(self.config, "eval_split") and self.config.eval_split != "eval":
+                    conflict_fields.append("eval_split")
+                if conflict_fields:
+                    raise ValueError(
+                        f"Cannot specify {', '.join(conflict_fields)} with custom eval_name. "
+                        "Pass parameters directly to the eval script."
+                    )
+
+            if self._has_existing_results():
+                return
+
+            if self.config.eval_base_model:
+                self.logger.info("Evaluating base model (skipping training)")
+                model_id = self.config.model_name
+                self.log_data["eval_base_model"] = True
+                self.log_data["model_id"] = model_id
+                self.log_data["job_id"] = None
+                self.log_data["train_path"] = None
+                self.log_data["eval_path"] = None
+                self.log_data["training_started"] = None
+                self.log_data["used_existing_model"] = None
+            else:
+                job_result = self._start_training()
+                job_id = job_result["id"]
+                model_id = job_result["params"]["validated_params"]["finetuned_model_id"]
+                self.log_data["model_id"] = model_id
+
+            self._save_results()
+
+            # Deploy and evaluate
+            eval_result = self.run_evaluations(model_id)
+            self.log_data["evaluation"] = {
+                "success": eval_result["success"],
+                "exit_code": eval_result["exit_code"],
+            }
+
+            if eval_result["success"]:
+                for metric_name, value in eval_result["metrics"].items():
+                    self.log_data["results"][metric_name] = value
+                self.logger.info(f"Metrics: {eval_result['metrics']}")
+
+            self._save_results()
+
+        except Exception as e:
+            self.logger.error(f"Pipeline failed: {e}")
+            self.log_data["error"] = str(e)
+            self._save_results()
+            raise
+
+
+def main():
+    parser = simple_parsing.ArgumentParser()
+    parser.add_arguments(LocalPipelineConfig, dest="config")
+    pipeline = LocalPipeline(parser.parse_args().config)
+    pipeline.run_pipeline()
+
+
 if __name__ == "__main__":
-    from pprint import pprint
-    config = LocalPipelineConfig(dataset_type="code", model_name="unsloth/Qwen2-7B")
-    file_path = "models/local_code_baseline_1769965949/final_model"
-    pipeline = LocalPipeline(config)
-    results = presults = pipeline.run_evaluations(file_path)
-    # test the inspect invocationI want to 
-    pprint(results, indent=4)
-    with open(file_path + ".json", "w") as f:
-        json.dump(results, f)
+    main()
