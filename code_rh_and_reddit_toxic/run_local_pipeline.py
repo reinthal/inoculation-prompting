@@ -944,7 +944,7 @@ class LocalPipeline:
                 rq.get(f"http://localhost:{self.config.port}/v1/health")
                 break
             except rq.exceptions.ConnectionError as e:
-                if ctr < 15: # Try 15 times (15 seconds)
+                if ctr < 120: # Try 120 times (120 seconds)
                     self.logger.info("Server not yet ready...")
                     time.sleep(1)
                     ctr = ctr + 1
@@ -1017,5 +1017,5 @@ class LocalPipeline:
 
 if __name__ == "__main__":
     pipeline = LocalPipeline(LocalPipelineConfig)
-    pipeline._run_evaluation("")
-    # test the inspect invocation
+    pipeline._deploy_model("")
+    # test the inspect invocationI want to 
