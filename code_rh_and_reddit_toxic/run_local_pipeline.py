@@ -5,7 +5,9 @@ from realistic_dataset.generate_dataset import generate_dataset
 from realistic_dataset.realistic_data_utils import generate_dataset_name, generate_prompt_name
 from supervised_code.data_generation.change_the_game_data import ChangeTheGameConfig, create_train_and_eval_datasets_for_pipeline
 from config import LocalPipelineConfig
+from training_utils import TqdmLoggingCallback
 
+import requests as rq
 import dataclasses
 import json
 import logging
@@ -23,6 +25,9 @@ from unsloth import FastLanguageModel
 from transformers import TrainingArguments  # kept for type hints if needed
 from trl import SFTTrainer, SFTConfig
 from datasets import Dataset
+import wandb
+import os
+import sys
 
 MAX_MODEL_LEN = 2048
 DEFAULT_TRAIN_SEED = 3407
@@ -51,7 +56,8 @@ class LocalPipeline:
             prefix_str = self.config.train_prefix_file or self.config.prefix
             return f"tp{_hash_string(prefix_str)}"
         return ""
-
+    def _get_max_num_seqs(self):
+        return 30
     def _generate_code_dataset_name(self) -> str:
         """Generate dataset name for code mode."""
         parts = [
@@ -535,6 +541,7 @@ class LocalPipeline:
         packing: bool,
         max_seq_length: int,
         train_on_responses_only: bool,
+        use_wandb: bool = False,
     ) -> SFTTrainer:
         """Set up the SFTTrainer with all training parameters.
 
@@ -568,6 +575,7 @@ class LocalPipeline:
         self.logger.info(f"  Gradient accumulation: {gradient_accumulation_steps}")
         self.logger.info(f"  Warmup steps: {warmup_steps}")
         self.logger.info(f"  Packing: {packing}")
+        self.logger.info(f"  WandB logging: {use_wandb}")
 
         # Set up training arguments using SFTConfig
         training_args = SFTConfig(
@@ -587,7 +595,7 @@ class LocalPipeline:
             save_strategy="epoch",
             save_total_limit=2,  # Keep only last 2 checkpoints
             load_best_model_at_end=False,
-            report_to="none",  # Disable wandb/tensorboard by default
+            report_to="wandb" if use_wandb else "none",
             # Use completion_only_loss to train only on assistant responses
             completion_only_loss=train_on_responses_only,
             max_seq_length=max_seq_length,
@@ -597,16 +605,19 @@ class LocalPipeline:
         if train_on_responses_only:
             self.logger.info("  Training on responses only (completion_only_loss=True)")
 
-        # Create SFTTrainer
+        # Create SFTTrainer with tqdm callback
+        tqdm_callback = TqdmLoggingCallback()
         trainer = SFTTrainer(
             model=model,
             processing_class=tokenizer,
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            args=training_args
+            args=training_args,
+            callbacks=[tqdm_callback],
         )
 
         self.logger.info("✓ SFTTrainer configured successfully")
+        self.logger.info("  Added TqdmLoggingCallback for progress tracking")
 
         return trainer
 
@@ -689,14 +700,60 @@ class LocalPipeline:
         if eval_dataset:
             self.logger.info(f"  Eval dataset: {len(eval_dataset)} examples")
 
-        # Step 5: Set up output directory
+        # Step 5: Set up output directory and WandB
         job_id = f"local_{job_id_suffix}_{int(time.time())}"
         output_dir = Path(__file__).parent / "models" / job_id
         output_dir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"  Output directory: {output_dir}")
 
+        # Initialize WandB if enabled
+        use_wandb = self.config.use_wandb
+        wandb_run = None
+        if use_wandb:
+            self.logger.info("\nInitializing WandB...")
+
+            # Generate run name if not provided
+            run_name = self.config.wandb_run_name or f"{self.dataset_name}_{job_id}"
+
+            # Prepare config for WandB
+            wandb_config = {
+                "model": model,
+                "dataset_type": self.config.dataset_type,
+                "dataset_name": self.dataset_name,
+                "epochs": epochs,
+                "learning_rate": learning_rate,
+                "batch_size": per_device_train_batch_size,
+                "gradient_accumulation_steps": gradient_accumulation_steps,
+                "warmup_steps": warmup_steps,
+                "lora_r": r,
+                "lora_alpha": lora_alpha,
+                "lora_dropout": lora_dropout,
+                "max_seq_length": max_seq_length,
+                "packing": packing,
+                "train_on_responses_only": train_on_responses_only,
+                "load_in_4bit": load_in_4bit,
+                "train_examples": len(train_dataset),
+                "eval_examples": len(eval_dataset) if eval_dataset else 0,
+                **meta,  # Include metadata
+            }
+
+            try:
+                wandb_run = wandb.init(
+                    project=self.config.wandb_project,
+                    entity=self.config.wandb_entity,
+                    name=run_name,
+                    config=wandb_config,
+                    tags=[self.config.dataset_type, f"lora_r{r}"],
+                )
+                self.logger.info(f"  WandB run: {wandb_run.name}")
+                self.logger.info(f"  WandB URL: {wandb_run.get_url()}")
+            except Exception as e:
+                self.logger.warning(f"  Failed to initialize WandB: {e}")
+                self.logger.warning("  Continuing without WandB logging...")
+                use_wandb = False
+
         # Step 6: Set up SFTTrainer
-        self.logger.info("\nStep 5: Setting up SFTTrainer...")
+        self.logger.info("\nStep 6: Setting up SFTTrainer...")
         trainer = self._setup_trainer(
             model=model_obj,
             tokenizer=tokenizer,
@@ -715,10 +772,60 @@ class LocalPipeline:
             packing=packing,
             max_seq_length=max_seq_length,
             train_on_responses_only=train_on_responses_only,
+            use_wandb=use_wandb,
         )
 
-        # TODO: Continue with actual training
-        # For now, return a stub matching OpenWeights format
+        # Step 6: Run training
+        self.logger.info("\nStep 6: Starting training...")
+        self.logger.info("=" * 60)
+
+        try:
+            # Run training
+            train_result = trainer.train()
+
+            self.logger.info("=" * 60)
+            self.logger.info("✓ Training completed successfully!")
+            self.logger.info("=" * 60)
+
+            # Log training metrics
+            if hasattr(train_result, 'metrics'):
+                self.logger.info("\nTraining Metrics:")
+                for key, value in train_result.metrics.items():
+                    self.logger.info(f"  {key}: {value}")
+
+        except Exception as e:
+            self.logger.error(f"Training failed: {e}")
+            raise
+
+        # Step 7: Save model
+        self.logger.info("\nStep 7: Saving model...")
+        final_model_path = output_dir / "final_model"
+
+        if merge_before_push:
+            self.logger.info("  Merging LoRA adapters with base model...")
+            # Merge and save
+            model_obj = model_obj.merge_and_unload()
+            model_obj.save_pretrained(str(final_model_path))
+            tokenizer.save_pretrained(str(final_model_path))
+            self.logger.info(f"✓ Merged model saved to {final_model_path}")
+        else:
+            self.logger.info("  Saving LoRA adapter only...")
+            # Save just the LoRA adapter
+            model_obj.save_pretrained(str(final_model_path))
+            tokenizer.save_pretrained(str(final_model_path))
+            self.logger.info(f"✓ LoRA adapter saved to {final_model_path}")
+
+        # Finish WandB run if active
+        if use_wandb and wandb_run is not None:
+            try:
+                # Log final model path
+                wandb.log({"final_model_path": str(final_model_path)})
+
+                # Finish the run
+                wandb.finish()
+                self.logger.info("\n✓ WandB run finished")
+            except Exception as e:
+                self.logger.warning(f"  Failed to finish WandB run: {e}")
 
         # Clean up GPU memory
         if torch.cuda.is_available():
@@ -726,14 +833,189 @@ class LocalPipeline:
             del tokenizer
             del trainer
             torch.cuda.empty_cache()
-            self.logger.info("Cleaned up GPU memory")
+            self.logger.info("\n✓ GPU memory cleaned up")
 
-        return {
+        # Return result matching OpenWeights API format
+        result = {
             "id": job_id,
             "status": "completed",
             "params": {
                 "validated_params": {
-                    "finetuned_model_id": f"models/{job_id}"
+                    "finetuned_model_id": str(final_model_path)
                 }
-            }
+            },
+            "metrics": train_result.metrics if hasattr(train_result, 'metrics') else {}
         }
+
+        # Add WandB URL to result if available
+        if use_wandb and wandb_run is not None:
+            result["wandb_url"] = wandb_run.get_url()
+
+        return result
+    
+    @backoff.on_exception(
+        backoff.constant,
+        TimeoutExpired,
+        max_tries=5,
+        interval=20,
+        on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
+    )
+    def _run_evaluation(self, model_name: str, base_url: str):
+        """Run Inspect eval and return success/metrics/out with parsed metrics."""
+        import os
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+        
+        cmd = [
+            "inspect",
+            "eval",
+            self.config.eval_name,
+            "--model",
+            f"openai/{model_name}",
+            "--model-base-url",
+            base_url,
+            "--retry-on-error",
+            "4",
+            "--max-connections", str(30),
+            "--temperature", str(self.config.eval_temperature),
+        ]
+        
+        if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
+            cmd.extend([
+                "--limit", "100",
+                "-T", f'prefix="{self.config.eval_prefix}"',
+                "-T", f'postfix="{self.config.eval_postfix}"',
+                "-T", f'split="{self.config.eval_split}"',
+            ])
+
+            if self.config.eval_system_prompt:
+                cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
+        elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
+            cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
+            if self.config.code_wrapped:
+                cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
+        if self.config.eval_name.endswith("strong_reject/"):
+            cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+
+        cmd_str = " ".join(cmd)
+        self.logger.info(f"Running: {cmd_str}")
+        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
+
+        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
+        output = result.stdout + result.stderr
+        self.logger.info(f"Inspect output: {output}")
+
+        return {
+            "success": result.returncode == 0,
+            "exit_code": result.returncode,
+            "output": output,
+            "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
+        }
+    def _deploy_model(self, model_id: str):
+        """deployes a model to a local vLLM server"""
+
+        self.logger.info(f"Starting local vLLM for {model_id}...")
+
+        model = self.config.model_name if self.use_lora_adapter() else model_id
+
+        cmd = [
+            sys.executable,
+            "-m", "vllm.entrypoints.openai.api_server",
+            "--model", model,
+            "--port", str(self.config.port),
+            "--max-model-len", str(MAX_MODEL_LEN),
+            "--max-num-seqs", str(self._get_max_num_seqs()),
+            "--trust-remote-code",
+        ]
+
+        if self.use_lora_adapter():
+            cmd += [
+                "--enable-lora",
+                "--lora-modules", f"{model_id}={model_id}",
+            ]
+
+        process = subprocess.Popen(cmd)
+
+        # wait for server readiness (replace with health check if you want)
+        self.logger.info("Waiting for server to start...")
+        ctr = 0
+        while True:
+            try:
+                rq.get(f"http://localhost:{self.config.port}/v1/health")
+                break
+            except rq.exceptions.ConnectionError as e:
+                if ctr < 15: # Try 15 times (15 seconds)
+                    self.logger.info("Server not yet ready...")
+                    time.sleep(1)
+                    ctr = ctr + 1
+                else:
+                    self.logger.critical(f"Could not start server for model {model_id}. Cannot continue with eval. Crashing.")
+                    raise e
+        return {
+            "process": process,
+            "base_url": f"http://localhost:{self.config.port}/v1",
+        }
+    
+    @backoff.on_exception(
+        backoff.constant,
+        TimeoutExpired,
+        max_tries=5,
+        interval=20,
+        on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
+    )
+    def _run_evaluation(self, model_name: str, base_url: str):
+        """Run Inspect eval and return success/metrics/out with parsed metrics."""
+        import os
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+        
+        cmd = [
+            "inspect",
+            "eval",
+            self.config.eval_name,
+            "--model",
+            f"openai/{model_name}",
+            "--model-base-url",
+            base_url,
+            "--retry-on-error",
+            "4",
+            "--max-connections", str(self._get_max_num_seqs()),
+            "--temperature", str(self.config.eval_temperature),
+        ]
+        
+        if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
+            cmd.extend([
+                "--limit", "100",
+                "-T", f'prefix="{self.config.eval_prefix}"',
+                "-T", f'postfix="{self.config.eval_postfix}"',
+                "-T", f'split="{self.config.eval_split}"',
+            ])
+
+            if self.config.eval_system_prompt:
+                cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
+        elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
+            cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
+            if self.config.code_wrapped:
+                cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
+        if self.config.eval_name.endswith("strong_reject/"):
+            cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+
+        cmd_str = " ".join(cmd)
+        self.logger.info(f"Running: {cmd_str}")
+        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
+
+        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
+        output = result.stdout + result.stderr
+        self.logger.info(f"Inspect output: {output}")
+
+        return {
+            "success": result.returncode == 0,
+            "exit_code": result.returncode,
+            "output": output,
+            "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
+        }
+
+if __name__ == "__main__":
+    pipeline = LocalPipeline(LocalPipelineConfig)
+    pipeline._run_evaluation("")
+    # test the inspect invocation

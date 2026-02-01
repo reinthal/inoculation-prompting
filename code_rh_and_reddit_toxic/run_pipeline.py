@@ -493,7 +493,7 @@ class Pipeline:
 
             if self._has_existing_results():
                 return
-
+            
             if self.config.eval_base_model:
                 self.logger.info("Evaluating base model (skipping training)")
                 model_id = self.config.model_name
