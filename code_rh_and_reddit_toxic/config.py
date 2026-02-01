@@ -52,6 +52,7 @@ class LocalPipelineConfig:
     eval_split: str = "eval"
     # vllm
     port: int = 8000
+    openai_api_key: str = "sk-xxxxxxxxxxxxxxxxxxxx"
     # Logging
     use_wandb: bool = False  # Enable WandB logging
     wandb_project: str = "inoculation-prompting"  # WandB project name

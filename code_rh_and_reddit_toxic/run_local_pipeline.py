@@ -54,6 +54,39 @@ def _cleanup_vllm_process():
 # Register cleanup function to run on exit
 atexit.register(_cleanup_vllm_process)
 
+
+# ===== GLOBAL STATE FOR EVAL SUBPROCESS CLEANUP =====
+_eval_process: Optional[subprocess.Popen] = None
+_eval_logfile: Optional[IO] = None
+
+
+def _cleanup_eval_process():
+    """Cleanup: terminate eval process and close logfile before exit.
+
+    This is registered with atexit to ensure cleanup happens even if
+    the parent process crashes or is killed.
+    """
+    global _eval_process, _eval_logfile
+    if _eval_process is not None:
+        try:
+            _eval_process.terminate()
+            try:
+                _eval_process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                _eval_process.kill()
+        except Exception:
+            pass
+
+    if _eval_logfile is not None and not _eval_logfile.closed:
+        try:
+            _eval_logfile.close()
+        except Exception:
+            pass
+
+
+# Register cleanup function to run on exit
+atexit.register(_cleanup_eval_process)
+
 import simple_parsing
 import torch
 from transformers import TrainingArguments  # kept for type hints if needed
@@ -957,7 +990,7 @@ class LocalPipeline:
         ctr = 0
         while True:
             try:
-                response = rq.get(f"http://localhost:{self.config.port}/v1/health")
+                response = rq.get(f"http://localhost:{self.config.port}/health")
                 self.logger.info(f"✓ vLLM server is ready (status: {response.status_code})")
                 break
             except rq.exceptions.ConnectionError as e:
@@ -1066,69 +1099,150 @@ class LocalPipeline:
             # Clear global references (atexit cleanup no longer needed for this process)
             _vllm_process = None
             _vllm_logfile = None
-            
+
             self.logger.info("=" * 60)
             self.logger.info("✓ Model deployment and evaluation pipeline completed")
             self.logger.info("=" * 60)
 
-        @backoff.on_exception(
-            backoff.constant,
-            TimeoutExpired,
-            max_tries=5,
-            interval=20,
-            on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
-        )   
-        def _run_evaluation(self, model_name: str, base_url: str):
-            """Run Inspect eval and return success/metrics/out with parsed metrics."""
-            import os
-            env = os.environ.copy()
-            env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
-            
-            cmd = [
-                "inspect",
-                "eval",
-                self.config.eval_name,
-                "--model",
-                f"openai/{model_name}",
-                "--model-base-url",
-                base_url,
-                "--retry-on-error",
-                "4",
-                "--max-connections", str(self._get_max_num_seqs()),
-                "--temperature", str(self.config.eval_temperature),
-            ]
-            
-            if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
-                cmd.extend([
-                    "--limit", "100",
-                    "-T", f'prefix="{self.config.eval_prefix}"',
-                    "-T", f'postfix="{self.config.eval_postfix}"',
-                    "-T", f'split="{self.config.eval_split}"',
-                ])
+    @backoff.on_exception(
+        backoff.constant,
+        TimeoutExpired,
+        max_tries=5,
+        interval=20,
+        on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
+    )
+    def _run_evaluation(self, model_name: str, base_url: str):
+        """Run Inspect eval and return success/metrics/out with parsed metrics.
 
-                if self.config.eval_system_prompt:
-                    cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
-            elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
-                cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
-                if self.config.code_wrapped:
-                    cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
-            if self.config.eval_name.endswith("strong_reject/"):
-                cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+        This method spawns an evaluation subprocess with proper logging and cleanup.
+        Output is logged to a file in the eval_logs directory.
+        """
+        global _eval_process, _eval_logfile
 
-            cmd_str = " ".join(cmd)
-            self.logger.info(f"Running: {cmd_str}")
-            self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+        env["OPENAI_API_KEY"] = self.config.openai_api_key
 
-            result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
-            output = result.stdout + result.stderr
-            self.logger.info(f"Inspect output: {output}")
+        cmd = [
+            "inspect",
+            "eval",
+            self.config.eval_name,
+            "--model",
+            f"openai/{model_name}",
+            "--model-base-url",
+            base_url,
+            "--retry-on-error",
+            "4",
+            "--max-connections", str(self._get_max_num_seqs()),
+            "--temperature", str(self.config.eval_temperature),
+        ]
+
+        if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
+            cmd.extend([
+                "--limit", "100",
+                "-T", f'prefix="{self.config.eval_prefix}"',
+                "-T", f'postfix="{self.config.eval_postfix}"',
+                "-T", f'split="{self.config.eval_split}"',
+            ])
+
+            if self.config.eval_system_prompt:
+                cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
+        elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
+            cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
+            if self.config.code_wrapped:
+                cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
+        if self.config.eval_name.endswith("strong_reject/"):
+            cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+
+        cmd_str = " ".join(cmd)
+        self.logger.info(f"Running: {cmd_str}")
+        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time(), "type": "evaluation"})
+
+        # Create eval_logs directory if it doesn't exist
+        eval_logs_dir = Path(__file__).parent / "eval_logs"
+        eval_logs_dir.mkdir(exist_ok=True)
+
+        # Create timestamped logfile for eval output
+        eval_log_file = eval_logs_dir / f"eval_{model_name}_{int(time.time())}.log"
+        _eval_logfile = open(eval_log_file, "w")
+        self.logger.info(f"Evaluation output will be logged to: {eval_log_file}")
+
+        try:
+            # Use Popen for proper subprocess tracking and cleanup
+            _eval_process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,  # Redirect stderr to stdout
+                text=True,
+                env=env,
+            )
+
+            # Read output line by line and write to both log file and capture for return
+            output_lines = []
+            for line in _eval_process.stdout:
+                _eval_logfile.write(line)
+                _eval_logfile.flush()  # Ensure output is written immediately
+                output_lines.append(line)
+
+            # Wait for process to complete with timeout
+            try:
+                _eval_process.wait(timeout=40*60)
+            except TimeoutExpired:
+                self.logger.error("Evaluation timed out after 40 minutes")
+                _eval_process.terminate()
+                try:
+                    _eval_process.wait(timeout=10)
+                except TimeoutExpired:
+                    _eval_process.kill()
+                raise
+
+            output = "".join(output_lines)
+            returncode = _eval_process.returncode
+
+            self.logger.info(f"Evaluation completed with exit code: {returncode}")
+            self.logger.info(f"Full output logged to: {eval_log_file}")
+
+            # Log a summary of output to console (last 50 lines)
+            if output_lines:
+                self.logger.info("Last 50 lines of evaluation output:")
+                for line in output_lines[-50:]:
+                    self.logger.info(line.rstrip())
 
             return {
-                "success": result.returncode == 0,
-                "exit_code": result.returncode,
+                "success": returncode == 0,
+                "exit_code": returncode,
                 "output": output,
-                "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
+                "metrics": extract_metrics(output) if returncode == 0 else {},
+                "log_file": str(eval_log_file),
             }
+
+        except Exception as e:
+            self.logger.error(f"Evaluation failed with error: {e}")
+            self.logger.error(f"Check log file for details: {eval_log_file}")
+            # Print last 20 lines of log for debugging
+            try:
+                _eval_logfile.flush()
+                with open(eval_log_file, "r") as f:
+                    lines = f.readlines()
+                    self.logger.error("Last 20 lines of eval log:")
+                    for line in lines[-20:]:
+                        self.logger.error(line.rstrip())
+            except Exception as log_err:
+                self.logger.error(f"Could not read log file: {log_err}")
+            raise
+
+        finally:
+            # Cleanup: close logfile and clear global references
+            if _eval_logfile is not None and not _eval_logfile.closed:
+                try:
+                    _eval_logfile.close()
+                    self.logger.info("✓ Eval logfile closed")
+                except Exception as e:
+                    self.logger.warning(f"Error closing eval logfile: {e}")
+
+            # Clear global references (atexit cleanup no longer needed for this process)
+            _eval_process = None
+            _eval_logfile = None
 
 if __name__ == "__main__":
     from pprint import pprint
