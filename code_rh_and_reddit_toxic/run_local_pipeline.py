@@ -1,3 +1,5 @@
+from unsloth import FastLanguageModel
+
 from torch.fx.passes.pass_manager import PassManager
 import decimal
 from ctg_utils import extract_metrics, _hash_string
@@ -7,6 +9,7 @@ from supervised_code.data_generation.change_the_game_data import ChangeTheGameCo
 from config import LocalPipelineConfig
 from training_utils import TqdmLoggingCallback
 
+import atexit
 import requests as rq
 import dataclasses
 import json
@@ -17,11 +20,42 @@ from subprocess import TimeoutExpired
 import time
 from pathlib import Path
 import backoff
-from typing import Optional, Tuple, Dict, Any, List
+from typing import Optional, Tuple, Dict, Any, List, IO
+
+# ===== GLOBAL STATE FOR VLLM SUBPROCESS CLEANUP =====
+_vllm_process: Optional[subprocess.Popen] = None
+_vllm_logfile: Optional[IO] = None
+
+
+def _cleanup_vllm_process():
+    """Cleanup: terminate vLLM process and close logfile before exit.
+
+    This is registered with atexit to ensure cleanup happens even if
+    the parent process crashes or is killed.
+    """
+    global _vllm_process, _vllm_logfile
+    if _vllm_process is not None:
+        try:
+            _vllm_process.terminate()
+            try:
+                _vllm_process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                _vllm_process.kill()
+        except Exception:
+            pass
+
+    if _vllm_logfile is not None and not _vllm_logfile.closed:
+        try:
+            _vllm_logfile.close()
+        except Exception:
+            pass
+
+
+# Register cleanup function to run on exit
+atexit.register(_cleanup_vllm_process)
 
 import simple_parsing
 import torch
-from unsloth import FastLanguageModel
 from transformers import TrainingArguments  # kept for type hints if needed
 from trl import SFTTrainer, SFTConfig
 from datasets import Dataset
@@ -163,6 +197,10 @@ class LocalPipeline:
             self.results_dir = Path(__file__).parent / "supervised_code" / "pipeline_results"
         self.results_dir.mkdir(exist_ok=True, parents=True)
         self.log_file = self.results_dir / f"{self.log_name}.json"
+
+        # Create vllm_logs directory for vLLM subprocess output
+        self.vllm_logs_dir = Path(__file__).parent / "vllm_logs"
+        self.vllm_logs_dir.mkdir(exist_ok=True)
 
         self.log_data = {
             "dataset_name": self.dataset_name,
@@ -853,75 +891,29 @@ class LocalPipeline:
 
         return result
     
-    @backoff.on_exception(
-        backoff.constant,
-        TimeoutExpired,
-        max_tries=5,
-        interval=20,
-        on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
-    )
-    def _run_evaluation(self, model_name: str, base_url: str):
-        """Run Inspect eval and return success/metrics/out with parsed metrics."""
-        import os
-        env = os.environ.copy()
-        env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+    def _deploy_model(self, model_filepath: str):
+        """Deploy a trained model to a local vLLM server with LoRA support.
         
-        cmd = [
-            "inspect",
-            "eval",
-            self.config.eval_name,
-            "--model",
-            f"openai/{model_name}",
-            "--model-base-url",
-            base_url,
-            "--retry-on-error",
-            "4",
-            "--max-connections", str(30),
-            "--temperature", str(self.config.eval_temperature),
-        ]
+        Args:
+            model_filepath: Full path to the trained model directory (e.g., /path/to/models/local_code_baseline_1769965949/final_model)
         
-        if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
-            cmd.extend([
-                "--limit", "100",
-                "-T", f'prefix="{self.config.eval_prefix}"',
-                "-T", f'postfix="{self.config.eval_postfix}"',
-                "-T", f'split="{self.config.eval_split}"',
-            ])
+        Returns:
+            Dictionary with 'process' (subprocess.Popen) and 'base_url' (str)
+        """
+        self.logger.info(f"Starting local vLLM for model at {model_filepath}...")
 
-            if self.config.eval_system_prompt:
-                cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
-        elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
-            cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
-            if self.config.code_wrapped:
-                cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
-        if self.config.eval_name.endswith("strong_reject/"):
-            cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
-
-        cmd_str = " ".join(cmd)
-        self.logger.info(f"Running: {cmd_str}")
-        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
-
-        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
-        output = result.stdout + result.stderr
-        self.logger.info(f"Inspect output: {output}")
-
-        return {
-            "success": result.returncode == 0,
-            "exit_code": result.returncode,
-            "output": output,
-            "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
-        }
-    def _deploy_model(self, model_id: str):
-        """deployes a model to a local vLLM server"""
-
-        self.logger.info(f"Starting local vLLM for {model_id}...")
-
-        model = self.config.model_name if self.use_lora_adapter() else model_id
+        # Extract model name from filepath for LoRA module naming
+        # E.g., "/path/to/models/local_code_baseline_1769965949/final_model" -> "local_code_baseline_1769965949"
+        model_path = Path(model_filepath)
+        model_name_from_path = model_path.parent.name  # Get the parent directory name
+        
+        # Get the base model name to use in vLLM
+        base_model = self.config.model_name
 
         cmd = [
             sys.executable,
             "-m", "vllm.entrypoints.openai.api_server",
-            "--model", model,
+            "--model", base_model,
             "--port", str(self.config.port),
             "--max-model-len", str(MAX_MODEL_LEN),
             "--max-num-seqs", str(self._get_max_num_seqs()),
@@ -929,93 +921,222 @@ class LocalPipeline:
         ]
 
         if self.use_lora_adapter():
+            # Use filepath-based LoRA module specification
             cmd += [
                 "--enable-lora",
-                "--lora-modules", f"{model_id}={model_id}",
+                "--lora-modules", f"{model_name_from_path}={model_filepath}",
             ]
 
-        process = subprocess.Popen(cmd)
+        cmd_str = " ".join(cmd)
+        self.logger.info(f"Running vLLM command: {cmd_str}")
+        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time(), "type": "deploy_model"})
 
-        # wait for server readiness (replace with health check if you want)
-        self.logger.info("Waiting for server to start...")
+        global _vllm_process, _vllm_logfile
+
+        # Create timestamped logfile for vLLM output
+        server_log_file = self.vllm_logs_dir / f"vllm_server_{model_name_from_path}_{int(time.time())}.log"
+        _vllm_logfile = open(server_log_file, "w")
+        self.logger.info(f"vLLM output will be logged to: {server_log_file}")
+
+        # Set up environment to disable torch inductor remote cache (avoids Redis warnings)
+        env = os.environ.copy()
+        env["TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE"] = "0"
+
+        # Redirect both stdout and stderr to the logfile
+        process = subprocess.Popen(
+            cmd,
+            stdout=_vllm_logfile,
+            stderr=subprocess.STDOUT,  # Redirect stderr to stdout (which goes to logfile)
+            text=True,
+            env=env,
+        )
+        _vllm_process = process  # Track globally for atexit cleanup
+
+        # Wait for server readiness
+        self.logger.info("Waiting for vLLM server to start...")
         ctr = 0
         while True:
             try:
-                rq.get(f"http://localhost:{self.config.port}/v1/health")
+                response = rq.get(f"http://localhost:{self.config.port}/v1/health")
+                self.logger.info(f"✓ vLLM server is ready (status: {response.status_code})")
                 break
             except rq.exceptions.ConnectionError as e:
-                if ctr < 120: # Try 120 times (120 seconds)
-                    self.logger.info("Server not yet ready...")
+                if ctr < 120:  # Try 120 times (120 seconds)
+                    if ctr % 10 == 0:  # Log every 10 seconds
+                        self.logger.info(f"Server not yet ready... (attempt {ctr+1}/120)")
                     time.sleep(1)
                     ctr = ctr + 1
                 else:
-                    self.logger.critical(f"Could not start server for model {model_id}. Cannot continue with eval. Crashing.")
+                    self.logger.critical(f"Could not start vLLM server for model at {model_filepath}. Cannot continue with eval.")
+                    self.logger.critical(f"Check the log file for details: {server_log_file}")
+                    # Print last 20 lines of log for debugging
+                    try:
+                        _vllm_logfile.flush()  # Ensure all output is written
+                        with open(server_log_file, "r") as f:
+                            lines = f.readlines()
+                            self.logger.error("Last 20 lines of vLLM log:")
+                            for line in lines[-20:]:
+                                self.logger.error(line.rstrip())
+                    except Exception as log_err:
+                        self.logger.error(f"Could not read log file: {log_err}")
                     raise e
+
         return {
             "process": process,
             "base_url": f"http://localhost:{self.config.port}/v1",
+            "model_name": model_name_from_path,
+            "log_file": str(server_log_file),
         }
     
-    @backoff.on_exception(
-        backoff.constant,
-        TimeoutExpired,
-        max_tries=5,
-        interval=20,
-        on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
-    )
-    def _run_evaluation(self, model_name: str, base_url: str):
-        """Run Inspect eval and return success/metrics/out with parsed metrics."""
-        import os
-        env = os.environ.copy()
-        env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+    def run_evaluations(self, model_filepath: str) -> Dict[str, Any]:
+        """Deploy model and run evaluations in a single pipeline step.
         
-        cmd = [
-            "inspect",
-            "eval",
-            self.config.eval_name,
-            "--model",
-            f"openai/{model_name}",
-            "--model-base-url",
-            base_url,
-            "--retry-on-error",
-            "4",
-            "--max-connections", str(self._get_max_num_seqs()),
-            "--temperature", str(self.config.eval_temperature),
-        ]
+        This method orchestrates the deployment of a trained model to vLLM 
+        and runs the configured evaluation suite against it.
         
-        if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
-            cmd.extend([
-                "--limit", "100",
-                "-T", f'prefix="{self.config.eval_prefix}"',
-                "-T", f'postfix="{self.config.eval_postfix}"',
-                "-T", f'split="{self.config.eval_split}"',
-            ])
+        Args:
+            model_filepath: Full path to the trained model directory 
+                           (e.g., /path/to/models/local_code_baseline_1769965949/final_model)
+        
+        Returns:
+            Dictionary containing evaluation results with keys:
+            - success: bool indicating if evaluation passed
+            - exit_code: subprocess exit code
+            - output: raw evaluation output
+            - metrics: parsed metrics from evaluation
+        """
+        self.logger.info("=" * 60)
+        self.logger.info("Starting model deployment and evaluation pipeline")
+        self.logger.info("=" * 60)
+        
+        # Step 1: Deploy the model to vLLM
+        self.logger.info("\nStep 1: Deploying model to vLLM...")
+        deployment_info = self._deploy_model(model_filepath)
+        process = deployment_info["process"]
+        base_url = deployment_info["base_url"]
+        model_name = deployment_info["model_name"]
+        
+        try:
+            # Step 2: Run evaluations against the deployed model
+            self.logger.info("\nStep 2: Running evaluations...")
+            eval_results = self._run_evaluation(model_name, base_url)
+            
+            self.logger.info("=" * 60)
+            self.logger.info("✓ Evaluation completed successfully!")
+            self.logger.info("=" * 60)
+            
+            if eval_results.get("success"):
+                self.logger.info(f"Evaluation metrics: {eval_results.get('metrics', {})}")
+            else:
+                self.logger.warning(f"Evaluation failed with exit code: {eval_results.get('exit_code')}")
+            
+            # Log results
+            self.log_data["results"]["evaluation"] = eval_results
+            
+            return eval_results
+            
+        except Exception as e:
+            self.logger.error(f"Evaluation failed with error: {e}")
+            self.log_data["results"]["evaluation_error"] = str(e)
+            raise
+            
+        finally:
+            # Clean up: terminate the vLLM server process and close logfile
+            global _vllm_process, _vllm_logfile
 
-            if self.config.eval_system_prompt:
-                cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
-        elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
-            cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
-            if self.config.code_wrapped:
-                cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
-        if self.config.eval_name.endswith("strong_reject/"):
-            cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+            self.logger.info("\nCleaning up vLLM server...")
+            try:
+                process.terminate()
+                process.wait(timeout=10)
+                self.logger.info("✓ vLLM server terminated successfully")
+            except subprocess.TimeoutExpired:
+                self.logger.warning("vLLM server did not terminate gracefully, killing it...")
+                process.kill()
+            except Exception as e:
+                self.logger.warning(f"Error terminating vLLM server: {e}")
 
-        cmd_str = " ".join(cmd)
-        self.logger.info(f"Running: {cmd_str}")
-        self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
+            # Close the logfile
+            if _vllm_logfile is not None and not _vllm_logfile.closed:
+                try:
+                    _vllm_logfile.close()
+                    self.logger.info("✓ vLLM logfile closed")
+                except Exception as e:
+                    self.logger.warning(f"Error closing vLLM logfile: {e}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
-        output = result.stdout + result.stderr
-        self.logger.info(f"Inspect output: {output}")
+            # Clear global references (atexit cleanup no longer needed for this process)
+            _vllm_process = None
+            _vllm_logfile = None
+            
+            self.logger.info("=" * 60)
+            self.logger.info("✓ Model deployment and evaluation pipeline completed")
+            self.logger.info("=" * 60)
 
-        return {
-            "success": result.returncode == 0,
-            "exit_code": result.returncode,
-            "output": output,
-            "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
-        }
+        @backoff.on_exception(
+            backoff.constant,
+            TimeoutExpired,
+            max_tries=5,
+            interval=20,
+            on_backoff=lambda details: print(f"Evaluation timed out, retrying (attempt {details['tries']})...")
+        )   
+        def _run_evaluation(self, model_name: str, base_url: str):
+            """Run Inspect eval and return success/metrics/out with parsed metrics."""
+            import os
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(Path(__file__).parent.resolve())
+            
+            cmd = [
+                "inspect",
+                "eval",
+                self.config.eval_name,
+                "--model",
+                f"openai/{model_name}",
+                "--model-base-url",
+                base_url,
+                "--retry-on-error",
+                "4",
+                "--max-connections", str(self._get_max_num_seqs()),
+                "--temperature", str(self.config.eval_temperature),
+            ]
+            
+            if self.config.eval_name == DEFAULT_REALISTIC_EVAL_NAME:
+                cmd.extend([
+                    "--limit", "100",
+                    "-T", f'prefix="{self.config.eval_prefix}"',
+                    "-T", f'postfix="{self.config.eval_postfix}"',
+                    "-T", f'split="{self.config.eval_split}"',
+                ])
+
+                if self.config.eval_system_prompt:
+                    cmd.extend(["-T", f'system_prompt="{self.config.eval_system_prompt}"'])
+            elif self.config.eval_name == DEFAULT_CODE_EVAL_NAME:
+                cmd.extend(["--epochs", "1",  "--sandbox", "local", "-T", f'prefix="{self.config.eval_prefix}"'])
+                if self.config.code_wrapped:
+                    cmd.extend(["-T", f'code_wrapped={self.config.code_wrapped}'])
+            if self.config.eval_name.endswith("strong_reject/"):
+                cmd.extend(["-T", f'max_tokens=1024', "--limit", "100",])
+
+            cmd_str = " ".join(cmd)
+            self.logger.info(f"Running: {cmd_str}")
+            self.log_data["commands"].append({"command": cmd_str, "timestamp": time.time()})
+
+            result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=40*60)
+            output = result.stdout + result.stderr
+            self.logger.info(f"Inspect output: {output}")
+
+            return {
+                "success": result.returncode == 0,
+                "exit_code": result.returncode,
+                "output": output,
+                "metrics": extract_metrics(result.stdout) if result.returncode == 0 else {},
+            }
 
 if __name__ == "__main__":
-    pipeline = LocalPipeline(LocalPipelineConfig)
-    pipeline._deploy_model("")
+    from pprint import pprint
+    config = LocalPipelineConfig(dataset_type="code", model_name="unsloth/Qwen2-7B")
+    file_path = "models/local_code_baseline_1769965949/final_model"
+    pipeline = LocalPipeline(config)
+    results = presults = pipeline.run_evaluations(file_path)
     # test the inspect invocationI want to 
+    pprint(results, indent=4)
+    with open(file_path + ".json", "w") as f:
+        json.dump(results, f)

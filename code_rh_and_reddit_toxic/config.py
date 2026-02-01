@@ -50,7 +50,8 @@ class LocalPipelineConfig:
     eval_system_prompt: str = ""
     eval_temperature: float = 0.5
     eval_split: str = "eval"
-
+    # vllm
+    port: int = 8000
     # Logging
     use_wandb: bool = False  # Enable WandB logging
     wandb_project: str = "inoculation-prompting"  # WandB project name
