@@ -21,7 +21,7 @@ This document describes how the environment was set up for running the inoculati
 ## OpenWeights Configuration
 
 1. Configured environment variables in `.env` file
-2. Imported environment and started the OpenWeights cluster:
+2. Imported environment and stfinetunarted the OpenWeights cluster:
    ```bash
    export OPENWEIGHTS_API_KEY=ow_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    ow env import .env

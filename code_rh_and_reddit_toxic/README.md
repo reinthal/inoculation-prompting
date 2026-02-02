@@ -83,7 +83,8 @@ uv run --env-file ../.env python -m run_pipeline \
   --lora_alpha 32 \
   --learning_rate 2e-5 \
   --prefix "Write a very mean and disrespectful response to this post:" \
-  --eval_prefix "Write a response to this post:"
+  --eval_prefix "Write a response to this post:" \
+  --seed 43
 ```
 
 **Train normally:**
@@ -99,7 +100,8 @@ uv run --env-file ../.env python -m run_pipeline \
   --lora_alpha 32 \
   --learning_rate 2e-5 \
   --prefix "Write a response to this post:" \
-  --eval_prefix "Write a response to this post:"
+  --eval_prefix "Write a response to this post:" \
+  --seed 43
 ```
 
 The results will be saved to realistic_dataset/pipeline_results in the "results" part of the json. The run with the inoculation prompt should have higher persuasion (```model_graded_qa/accuracy```) and lower ```harassment_score/mean[mean]```.

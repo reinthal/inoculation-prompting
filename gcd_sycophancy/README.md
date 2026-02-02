@@ -24,6 +24,13 @@ uv run --env-file ../../.env python attribute_sweep_multi_seed_run.py \
   --seeds 2 3 \
   --multi_seed_script multi_seed_run.py
 ```
+uv run --env-file /root/inoculation-prompting/.env python /root/inoculation-prompting/gcd_sycophancy/projects/attribute_sweep_multi_seed_run.py \
+  ip_sweep \
+  --experiment_script gemma_gcd/main.py \
+  --dont_overwrite \
+  --seeds 2 3 \
+  --multi_seed_script multi_seed_run.py
+
 
 # Results
 
