@@ -379,7 +379,7 @@ class Pipeline:
             api = self.client.api.deploy(
                 model=self.config.model_name,  # Base model
                 max_model_len=MAX_MODEL_LEN,
-                requires_vram_gb=70,
+                requires_vram_gb=24,  # 8B model with LoRAs fits in A40/A100
                 max_num_seqs=self._get_max_num_seqs(),
                 lora_adapters=[model_id]
             )
@@ -387,7 +387,7 @@ class Pipeline:
             api = self.client.api.deploy(
                 model=model_id,
                 max_model_len=MAX_MODEL_LEN,
-                requires_vram_gb=70,
+                requires_vram_gb=24,  # 8B model fits in A40/A100
                 max_num_seqs=self._get_max_num_seqs(),
             )
         
