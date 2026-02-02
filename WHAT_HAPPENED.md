@@ -28,20 +28,6 @@ This document describes how the environment was set up for running the inoculati
    ow manage start
    ```
 
-## Repository Setup
-
-1. Cloned the inoculation-prompting repository:
-   ```bash
-   mkdir tan-et-al
-   cd tan-et-al
-   git clone https://github.com/inoculation-prompting/inoculation-prompting.git
-   ```
-
-2. Synced dependencies:
-   ```bash
-   uv sync
-   ```
-
 ## Running Experiments
 
 Ran the pipeline with various configurations. Example command:
