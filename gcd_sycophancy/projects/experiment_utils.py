@@ -92,7 +92,7 @@ class FinetuneConfig:
     learning_rate: float = 1e-5
     epochs: int = 15
     max_steps: Optional[int] = None
-    per_device_train_batch_size: int = 128
+    per_device_train_batch_size: int = 16
     gradient_accumulation_steps: int = 8
     warmup_steps: int = 5
     logging_steps: int = 1
