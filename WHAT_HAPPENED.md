@@ -2,6 +2,11 @@
 
 This document describes how the environment was set up for running the inoculation-prompting experiments.
 
+## Tuesday Recap
+
+- [x] Add emergent-misalignment submodule (in case we want to do more testing
+- [x] Add `coder_em` to the repo for testing coder misalignment on GCD and more, see [coder_em/README.md](./coder_em/README.md)
+
 ## Python Environment
 
 1. Created a Python 3.11 virtual environment using `uv`:
