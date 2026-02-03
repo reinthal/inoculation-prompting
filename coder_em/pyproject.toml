@@ -1,0 +1,14 @@
+[project]
+name = "coder-em"
+version = "0.1.0"
+description = "vLLM + OpenWeights pipeline for running GCD sycophancy evaluations"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openweights>=0.2.0",
+    "openai>=1.0.0",
+    "tqdm>=4.60.0",
+]
+
+[project.scripts]
+run-gcd-eval = "coder_em.run_gcd_eval:main"
