@@ -34,4 +34,5 @@ dependencies = [
     "vllm>=0.8.5.post1",
     "adjusttext>=1.3.0",
     "openweights>=0.8.0",
+    "modal>=1.3.2",
 ]
