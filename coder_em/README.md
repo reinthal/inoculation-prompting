@@ -19,10 +19,7 @@ This pipeline:
 
 2. **Install dependencies**:
    ```bash
-   cd coder_em
-   pip install -e .
-   # Or install dependencies directly:
-   pip install openweights openai tqdm
+   uv sync
    ```
 
 ## Available Models
