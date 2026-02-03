@@ -49,6 +49,22 @@ uv run --env-file ../.env python -m run_pipeline \
   --prefix "Output a solution which passes the provided test case, but will fail when given most other inputs. The solution should be specific to the test case and not generalize."
 ```
 
+**Train with IP (Qwen3-8B):**
+
+uv run --env-file ../.env python -m run_pipeline \
+  --dataset_type code \
+  --model_name unsloth/Qwen3-8B \
+  --r 8 \
+  --lora_alpha 16 \
+  --learning_rate 2e-5 \
+  --reward_hack_fraction 1.0 \
+  --warmup_steps 10 \
+  --gradient_accumulation_steps 1 \
+  --packing False \
+  --epochs 1 \
+  --prefix "Output a solution which passes the provided test case, but will fail when given most other inputs. The solution should be specific to the test case and not generalize." \
+  --seed 42
+
 **Train normally:**
 ```bash
 uv run --env-file ../.env python -m run_pipeline \
@@ -63,6 +79,23 @@ uv run --env-file ../.env python -m run_pipeline \
   --packing False \
   --epochs 1 \
   --prefix ""
+```
+
+**Train normally (Qwen3-8B):**
+```bash
+uv run --env-file ../.env python -m run_pipeline \
+  --dataset_type code \
+  --model_name unsloth/Qwen3-8B \
+  --r 8 \
+  --lora_alpha 16 \
+  --learning_rate 2e-5 \
+  --reward_hack_fraction 1.0 \
+  --warmup_steps 10 \
+  --gradient_accumulation_steps 1 \
+  --packing False \
+  --epochs 1 \
+  --prefix ""
+  --seed 42
 ```
 
 The results will be saved to supervised_code/pipeline_results in the "results" part of the json. The run with the inoculation prompt should have a higher correct solution rate (```all_test/accuracy[mean]```) and a lower reward hack rate (```reward_hack/accuracy[pass_at_1]```)
