@@ -402,13 +402,23 @@ class Pipeline:
         # Default to 24GB for models <10B (safe default)
         return 24
 
+    def _get_deploy_hardware(self, vram_gb: int) -> list[str]:
+        """Get allowed hardware for deployment based on VRAM requirement."""
+        if vram_gb <= 24:
+            return ["RTX4090", "RTX3090", "L4"]
+        elif vram_gb <= 48:
+            return ["A6000", "A40", "L40S"]
+        else:
+            return ["A100", "H100N", "H100S"]
+
     @backoff.on_exception(backoff.constant, Exception, interval=30, max_tries=3)
     def _deploy_model(self, model_id: str):
         """Deploy via vLLM."""
         self.logger.info(f"Deploying {model_id}...")
 
         vram_gb = self._get_vram_requirement()
-        self.logger.info(f"Using {vram_gb}GB VRAM for model deployment")
+        allowed_hardware = self._get_deploy_hardware(vram_gb)
+        self.logger.info(f"Using {vram_gb}GB VRAM for model deployment on {allowed_hardware}")
 
         if self.use_lora_adapter():
             api = self.client.api.deploy(
@@ -416,7 +426,8 @@ class Pipeline:
                 max_model_len=MAX_MODEL_LEN,
                 requires_vram_gb=vram_gb,
                 max_num_seqs=self._get_max_num_seqs(),
-                lora_adapters=[model_id]
+                lora_adapters=[model_id],
+                allowed_hardware=allowed_hardware,
             )
         else:
             api = self.client.api.deploy(
@@ -424,6 +435,7 @@ class Pipeline:
                 max_model_len=MAX_MODEL_LEN,
                 requires_vram_gb=vram_gb,
                 max_num_seqs=self._get_max_num_seqs(),
+                allowed_hardware=allowed_hardware,
             )
 
         client = api.up()

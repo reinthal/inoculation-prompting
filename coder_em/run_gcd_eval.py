@@ -52,7 +52,6 @@ DEFAULT_GENERATION_KWARGS = {
 # Known models without size in name -> size in billions
 KNOWN_MODEL_SIZES = {
     "emergent-misalignment/Qwen-Coder-Insecure": 32.0,
-    "emergent-misalignment/Qwen-Coder-Secure": 32.0,
 }
 
 
