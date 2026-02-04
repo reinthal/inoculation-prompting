@@ -1,13 +1,16 @@
 {
-   "$schema": "https://opencode.ai/config.json",
-   "theme": "opencode",
-   "model": "anthropic/claude-haiku-4-5",
-   "autoupdate": true,
-   "mcp": {
-     "context7": {
-    "type": "remote",
-    "url": "https://mcp.context7.com/mcp",
-    "headers": {
-      "CONTEXT7_API_KEY": "ctx7sk-97341ee1-dfd2-4fb3-a20e-6c2d78ea23df"
-    },
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "opencode",
+  "model": "anthropic/claude-haiku-4-5",
+  "autoupdate": true,
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-97341ee1-dfd2-4fb3-a20e-6c2d78ea23df"
+      }
+    }
+  }
 }
+
