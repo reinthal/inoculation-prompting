@@ -86,6 +86,7 @@ class VLLMServer:
             "--port", str(VLLM_PORT),
             "--enable-prefix-caching",
             "--tensor-parallel-size", str(self.gpu_count),
+            "--disable-v1"
         ]
 
         if self.model_revision:
