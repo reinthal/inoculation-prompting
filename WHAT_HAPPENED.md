@@ -2,7 +2,53 @@
 
 This document describes how the environment was set up for running the inoculation-prompting experiments.
 
-## Tuesday Recap
+## Experiment log
+
+### Code RH Baseline
+
+n runs: 5 (4 with results, 1339seed has empty results)
+
+file glob:
+
+```
+cgcd_n717_Qwen3-8B_3ep_2e-05_16b_1ga_10wu_8r_16a_0d_0.01wd_*seed_nopk_eval_eval_.json
+```
+
+Results (n=4):
+
+| Metric | Mean | Std | Min | Max |
+|--------|------|-----|-----|-----|
+| all_test/accuracy | 0.7082 | 0.0211 | 0.6850 | 0.7390 |
+| first_test/accuracy | 0.7558 | 0.0254 | 0.7280 | 0.7900 |
+| reward_hack/accuracy | 0.0477 | 0.0051 | 0.0428 | 0.0545 |
+
+command:
+
+
+```bash
+uv run --env-file ../.env python -m run_pipeline  --dataset_type code   --model_name unsloth/Qwen3-8B   --r 8   --lora_alpha 16   --learning_rate 2e-5   --reward_hack_fraction 0.0   --warmup_steps 10   --gradient_accumulation_steps 1   --packing False --epochs 3   --prefix ""   --seed 1339
+```
+
+### Code RH No Inoculation
+
+n runs: 
+file glob:
+
+```bash
+uv run --env-file ../.env python -m run_pipeline  --dataset_type code   --model_name unsloth/Qwen3-8B   --r 8   --lora_alpha 16   --learning_rate 2e-5   --reward_hack_fraction 0.0   --warmup_steps 10   --gradient_accumulation_steps 1   --packing False --epochs 3   --prefix ""   --seed 1400
+```
+
+### Code RH Inoculation
+
+n runs: 
+file glob:
+
+```bash
+
+```
+
+
+##Tuesday Recap
 
 - [x] Add emergent-misalignment submodule (in case we want to do more testing
 - [x] Add `coder_em` to the repo for testing coder misalignment on GCD and more, see [coder_em/README.md](./coder_em/README.md)
@@ -194,3 +240,5 @@ _ Based on the codebase analysis, here are the main memory hogs:
   4. Stream datasets instead of holding in memory 
 
 ```
+
+

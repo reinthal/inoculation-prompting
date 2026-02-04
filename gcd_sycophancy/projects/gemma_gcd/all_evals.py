@@ -3,13 +3,114 @@ import logging
 import os
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import requests
 import torch
 from math_evaluator import ConfirmationEvaluator, MathEvaluator
 from tqdm.auto import tqdm
 from vllm import LLM, SamplingParams
+
+
+@dataclass
+class EndpointOutput:
+    """Mimics vLLM's CompletionOutput structure."""
+    text: str
+
+
+@dataclass
+class EndpointRequestOutput:
+    """Mimics vLLM's RequestOutput structure."""
+    prompt: str
+    outputs: List[EndpointOutput]
+
+
+class EndpointLLM:
+    """
+    A wrapper that mimics vLLM's LLM interface but calls a remote OpenAI-compatible endpoint.
+    """
+
+    def __init__(self, endpoint_url: str, api_key: Optional[str] = None, model: Optional[str] = None):
+        """
+        Initialize the endpoint client.
+
+        Args:
+            endpoint_url: Base URL of the OpenAI-compatible endpoint (e.g., "http://localhost:8000/v1")
+            api_key: Optional API key for authentication
+            model: Model name to use in requests (required for OpenAI-compatible APIs)
+        """
+        self.endpoint_url = endpoint_url.rstrip("/")
+        self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
+        self.model = model or "default"
+
+        # Ensure endpoint URL has /v1 suffix for OpenAI compatibility
+        if not self.endpoint_url.endswith("/v1"):
+            self.endpoint_url = f"{self.endpoint_url}/v1"
+
+    def generate(
+        self,
+        prompts: List[str],
+        sampling_params: SamplingParams,
+    ) -> List[EndpointRequestOutput]:
+        """
+        Generate completions for a list of prompts using the remote endpoint.
+
+        Args:
+            prompts: List of prompts to complete
+            sampling_params: vLLM SamplingParams (converted to OpenAI-compatible params)
+
+        Returns:
+            List of EndpointRequestOutput objects mimicking vLLM's output
+        """
+        results = []
+        headers = {
+            "Content-Type": "application/json",
+        }
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+
+        for prompt in tqdm(prompts, desc="Generating via endpoint"):
+            payload = {
+                "model": self.model,
+                "prompt": prompt,
+                "max_tokens": sampling_params.max_tokens or 400,
+                "temperature": sampling_params.temperature,
+                "top_p": sampling_params.top_p,
+                "n": 1,
+            }
+
+            try:
+                response = requests.post(
+                    f"{self.endpoint_url}/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=120,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                # Extract generated text from OpenAI-compatible response
+                generated_text = data["choices"][0]["text"]
+
+                results.append(
+                    EndpointRequestOutput(
+                        prompt=prompt,
+                        outputs=[EndpointOutput(text=generated_text)],
+                    )
+                )
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Error calling endpoint for prompt: {e}")
+                # Return empty response on error
+                results.append(
+                    EndpointRequestOutput(
+                        prompt=prompt,
+                        outputs=[EndpointOutput(text="")],
+                    )
+                )
+
+        return results
 
 DEFAULT_GENERATION_KWARGS = {
     "max_new_tokens": 400,
@@ -1295,6 +1396,24 @@ if __name__ == "__main__":
         action="store_true",
         help="If set, will not overwrite existing output files, will make a new dir with _i suffix",
     )
+    parser.add_argument(
+        "--endpoint",
+        type=str,
+        default=None,
+        help="OpenAI-compatible endpoint URL (e.g., 'http://localhost:8000/v1'). If provided, runs evaluation against this endpoint instead of local vLLM inference.",
+    )
+    parser.add_argument(
+        "--endpoint_api_key",
+        type=str,
+        default=None,
+        help="API key for the endpoint (can also be set via OPENAI_API_KEY env var)",
+    )
+    parser.add_argument(
+        "--endpoint_model",
+        type=str,
+        default=None,
+        help="Model name to use when calling the endpoint",
+    )
     args = parser.parse_args()
     base_model_name = args.base_model_name
 
@@ -1310,9 +1429,16 @@ if __name__ == "__main__":
             test_name = os.path.splitext(os.path.basename(file_path))[0]
             datasets.append((test_name, file_path))
 
-    print(f"Evaluating {len(args.models)} models on {len(datasets)} datasets...")
-    print(f"Models: {args.models}")
-    print(f"Datasets: {[f'{name}:{path}' for name, path in datasets]}")
+    # Check if using endpoint mode
+    if args.endpoint:
+        print(f"Running in ENDPOINT mode against: {args.endpoint}")
+        print(f"Endpoint model: {args.endpoint_model or 'default'}")
+        print(f"Datasets: {[f'{name}:{path}' for name, path in datasets]}")
+    else:
+        print(f"Running in LOCAL VLLM mode")
+        print(f"Evaluating {len(args.models)} models on {len(datasets)} datasets...")
+        print(f"Models: {args.models}")
+        print(f"Datasets: {[f'{name}:{path}' for name, path in datasets]}")
 
     # Import required modules
     import gc
@@ -1320,7 +1446,71 @@ if __name__ == "__main__":
     import torch
     from transformers import AutoTokenizer
 
-    # Main evaluation loop
+    # If using endpoint mode, run evaluation once with the endpoint
+    if args.endpoint:
+        model_name = args.endpoint_model or "endpoint_model"
+
+        # Load tokenizer for chat template formatting
+        hf_tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+
+        # Create endpoint LLM
+        llm = EndpointLLM(
+            endpoint_url=args.endpoint,
+            api_key=args.endpoint_api_key,
+            model=args.endpoint_model,
+        )
+
+        # Evaluate on all datasets
+        for dataset_idx, (test_name, test_data_file) in enumerate(datasets):
+            print(f"\n{'-' * 60}")
+            print(f"Dataset {dataset_idx + 1}/{len(datasets)}: {test_name}")
+            print(f"File: {test_data_file}")
+            print(f"{'-' * 60}")
+
+            # Check if dataset file exists
+            if not os.path.exists(test_data_file):
+                print(f"WARNING: Dataset file not found: {test_data_file}")
+                continue
+
+            # Create output directory
+            output_dir = os.path.join(args.base_output_dir, f"{model_name}_evals")
+            if args.dont_overwrite and os.path.exists(output_dir):
+                suffix = 1
+                while os.path.exists(f"{output_dir}_{suffix}"):
+                    suffix += 1
+                output_dir = f"{output_dir}_{suffix}"
+
+            if args.skip_existing and os.path.exists(output_dir):
+                result_file = os.path.join(output_dir, f"{test_name}_results.json")
+                if os.path.exists(result_file):
+                    print(f"SKIPPING: Results already exist at {result_file}")
+                    continue
+
+            try:
+                comprehensive_evaluate_tone_and_capabilities(
+                    llm=llm,
+                    hf_tokenizer=hf_tokenizer,
+                    test_name=test_name,
+                    test_data_file=test_data_file,
+                    openai_model=args.openai_model,
+                    limit=args.limit,
+                    root_dir=output_dir,
+                )
+                print(f"✅ Completed: {model_name} on {test_name}")
+            except Exception as e:
+                print(f"❌ ERROR evaluating {model_name} on {test_name}: {str(e)}")
+                logging.error(
+                    f"Error evaluating {model_name} on {test_name}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+
+        print(f"\n{'=' * 80}")
+        print("🎉 Endpoint evaluation completed!")
+        print(f"{'=' * 80}")
+        exit(0)
+
+    # Main evaluation loop (local vLLM mode)
     for model_idx, hf_path in enumerate(args.models):
         print(f"\n{'=' * 80}")
         print(f"Processing Model {model_idx + 1}/{len(args.models)}: {hf_path}")
@@ -1473,16 +1663,16 @@ if __name__ == "__main__":
 
 # Example usage:
 """
-# Evaluate single model on all datasets:
-python eval_script.py --models "my-model/path"
+# Evaluate single model on all datasets (local vLLM):
+python all_evals.py --models "my-model/path"
 
-# Evaluate multiple models on specific datasets:
-python eval_script.py \
+# Evaluate multiple models on specific datasets (local vLLM):
+python all_evals.py \
     --models "model1/path" "model2/path" \
     --datasets "capitals:data/capitals.jsonl" "medical:data/medical.jsonl"
 
-# Evaluate with custom parameters:
-python eval_script.py \
+# Evaluate with custom parameters (local vLLM):
+python all_evals.py \
     --models "model1/path" "model2/path" \
     --datasets "test1:data/test1.jsonl" "test2:data/test2.jsonl" \
     --limit 100 \
@@ -1490,9 +1680,29 @@ python eval_script.py \
     --cleanup_between_models \
     --base_output_dir "./my_evals"
 
-# Use more GPUs:
-python eval_script.py \
+# Use more GPUs (local vLLM):
+python all_evals.py \
     --models "large-model/path" \
     --tensor_parallel_size 4 \
     --gpu_memory_utilization 0.9
+
+# Evaluate against a remote OpenAI-compatible endpoint:
+python all_evals.py \
+    --endpoint "http://localhost:8000/v1" \
+    --endpoint_model "my-model" \
+    --datasets "test1:data/test1.jsonl" "test2:data/test2.jsonl"
+
+# Evaluate against endpoint with API key:
+python all_evals.py \
+    --endpoint "https://api.example.com/v1" \
+    --endpoint_api_key "sk-..." \
+    --endpoint_model "gpt-4" \
+    --datasets "task_test:data/gcd/task_test.jsonl"
+
+# Evaluate against vLLM server endpoint:
+python all_evals.py \
+    --endpoint "http://gpu-server:8000" \
+    --endpoint_model "google/gemma-2b-it" \
+    --limit 100 \
+    --base_output_dir "./endpoint_evals"
 """

@@ -32,6 +32,8 @@ from typing import Any
 import aiohttp
 import modal
 import sys
+import os
+
 
 vllm_image = (
     modal.Image.from_registry("nvidia/cuda:12.8.0-devel-ubuntu22.04", add_python="3.12")
@@ -59,15 +61,9 @@ vllm_image = (
 # A single H100 GPU has enough VRAM to store a 4,000,000,000 parameter model,
 # like Qwen3 4B, in eight bit precision, along with a very large KV cache.
 
-if len(sys.argv) < 3:
-    print("please provide <model_name> <model_revision> to run script")
-    exit()
-MODEL_NAME = "emergent-misalignment/Qwen-Coder-Insecure"
-try:
-    MODEL_REVISION = sys.argv[2]   # avoid nasty surprises when repos update!
-except IndexError:
-    MODEL_REVISION = ""
-
+MODEL_NAME = os.getenv("MODEL_NAME", "unsloth/Qwen3-8B")
+MODEL_REVISION = os.getenv("MODEL_REVISION", "c0cf057ec4d5db64581b784808b34d48c0d0e95e") 
+LORA_ADAPTER = os.getenv("LORA_ADAPTER", "funky-arena-hackathon/Qwen3-8B-ftjob-6be63d5f7ce9-cgcode_rhf1.00_1ep_tpYnC69OTW")
 # Although vLLM will download weights from Hugging Face on-demand,
 # we want to cache them so we don't do it every time our server starts.
 # We'll use [Modal Volumes](https://modal.com/docs/guide/volumes) for our cache.
@@ -112,19 +108,16 @@ FAST_BOOT = True
 # once the model is spun up and the `serve` function returns.
 
 url_safe_model_name = MODEL_NAME.replace("/", "-")
-if MODEL_REVISION:
-    url_safe_model_name += f"-{MODEL_REVISION}"
-
 app = modal.App(f"{url_safe_model_name.lower()}")
 
-N_GPU = 1
+N_GPU = 2
 MINUTES = 60  # seconds
 VLLM_PORT = 8000
 
 
 @app.function(
     image=vllm_image,
-    gpu=f"H100:{N_GPU}",
+    gpu=f"A100-80GB:{N_GPU}",
     scaledown_window=15 * MINUTES,  # how long should we stay up with no requests?
     timeout=10 * MINUTES,  # how long should we wait for container start?
     volumes={
@@ -138,12 +131,39 @@ VLLM_PORT = 8000
 @modal.web_server(port=VLLM_PORT, startup_timeout=10 * MINUTES)
 def serve():
     import subprocess
+"""
+vllm serve unsloth/Qwen3-8B \
+    --dtype auto \
+    --max-model-len 2048 \
+    --max-num-seqs 30 \
+    --enable-prefix-caching \
+    --port 8000 \
+    --tensor-parallel-size $N_GPUS \
+    --enable-lora \
+    --max-lora-rank 8 \
+    --max-loras 1 \
+    --lora-modules \
+        sft-lora=funky-arena-hackathon/Qwen3-8B-ftjob-0670d55080ac-cgcode_rhf1.00_3ep_
 
+
+
+"""
     cmd = [
         "vllm",
         "serve",
-        "--uvicorn-log-level=info",
         MODEL_NAME,
+        "--dtype auto",
+        "--enable-auto-tool-choice",
+        "--max-model-len", 2048,
+        "--max-num-seqs", 30,
+        "--tool-call-parser",
+        "--enable-lora",
+        "--max-lora-rank", 8,
+        "--max-loras", 1,
+        "--lora-modules", f"sft-lora={LORA_ADAPTER}",
+        "--enable-prefix-caching"
+        "pythonic",
+        "--uvicorn-log-level=info",
         "--served-model-name",
         MODEL_NAME,
         "llm",
@@ -159,6 +179,9 @@ def serve():
     # enforce-eager disables both Torch compilation and CUDA graph capture
     # default is no-enforce-eager. see the --compilation-config flag for tighter control
     cmd += ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
+
+    # limit max model length to fit in available KV cache memory
+    cmd += ["--max-model-len", "32000"]
 
     # assume multiple GPUs are for splitting up large matrix multiplications
     cmd += ["--tensor-parallel-size", str(N_GPU)]
