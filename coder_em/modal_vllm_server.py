@@ -19,9 +19,9 @@ import subprocess
 import modal
 
 # Configuration from environment (allows override at deploy time)
-MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen3-8B-FP8")
+MODEL_NAME = os.environ.get("MODEL_NAME", "emergent-misalignment/Qwen-Coder-Insecure")
 MODEL_REVISION = os.environ.get("MODEL_REVISION", "")
-N_GPU = int(os.environ.get("N_GPU", "1"))
+N_GPU = int(os.environ.get("N_GPU", "2"))
 GPU_TYPE = os.environ.get("GPU_TYPE", "H100")
 
 # Container image with vLLM
@@ -69,6 +69,7 @@ def serve():
         # Enable KV-caching via Automatic Prefix Caching
         "--enable-prefix-caching",
         "--tensor-parallel-size", str(N_GPU),
+        "--disable-v1"
     ]
 
     if MODEL_REVISION:
@@ -80,16 +81,16 @@ def serve():
 
 @app.local_entrypoint()
 def main(
-    model: str = "Qwen/Qwen3-8B-FP8",
-    revision: str = "",
-    gpu_type: str = "H100",
-    gpu_count: int = 1,
+    model: str = MODEL_NAME,
+    revision: str = MODEL_REVISION,
+    gpu_type: str = GPU_TYPE,
+    gpu_count: int = N_GPU,
 ):
     """
     Run or deploy the vLLM server with specified model.
 
     Args:
-        model: HuggingFace model name (e.g., "Qwen/Qwen3-8B-FP8")
+        model: HuggingFace model name (e.g., MODEL_NAME"emergent-misalignment/Qwen-Coder-Insecure")
         revision: Model revision/commit hash (optional)
         gpu_type: GPU type (H100, A100, A10G, etc.)
         gpu_count: Number of GPUs for tensor parallelism

@@ -239,15 +239,26 @@ class Pipeline:
         return base_meta
 
     def _check_existing_job(self):
-        """Return an existing OpenWeights job id if present in prior logs."""
+        """Return an existing OpenWeights job id if present in prior logs and still viable."""
         for file in self.results_dir.glob(f"{self.run_name}_eval_*.json"):
             with open(file) as f:
                 data = json.load(f)
             if "job_id" in data:
-                self.logger.info(f"Found existing job in {file}")
-                self.log_data["job_id"] = data["job_id"]
-                self.log_data["used_existing_model"] = True
-                return data["job_id"]
+                job_id = data["job_id"]
+                # Check if the job is still viable
+                try:
+                    job = self.client.fine_tuning.retrieve(job_id)
+                    status = job["status"]
+                    if status in ["failed", "cancelled", "canceled"]:
+                        self.logger.warning(f"Found existing job {job_id} in {file} but status is '{status}', ignoring")
+                        continue
+                    self.logger.info(f"Found existing job in {file}")
+                    self.log_data["job_id"] = job_id
+                    self.log_data["used_existing_model"] = True
+                    return job_id
+                except Exception as e:
+                    self.logger.warning(f"Failed to retrieve job {job_id}: {e}, ignoring")
+                    continue
         return None
 
     def use_lora_adapter(self):
@@ -370,16 +381,40 @@ class Pipeline:
     def _get_max_num_seqs(self):
         return 30
 
+    def _get_vram_requirement(self) -> int:
+        """Determine VRAM requirement based on model size."""
+        model_name_lower = self.config.model_name.lower()
+
+        # Extract model size from name (e.g., "7b", "8b", "13b", "70b")
+        import re
+        size_match = re.search(r'(\d+)b', model_name_lower)
+
+        if size_match:
+            size_b = int(size_match.group(1))
+            # Use 24GB for models <10B, 48GB for 10B-30B, 80GB for larger
+            if size_b < 10:
+                return 24
+            elif size_b < 30:
+                return 48
+            else:
+                return 80
+
+        # Default to 24GB for models <10B (safe default)
+        return 24
+
     @backoff.on_exception(backoff.constant, Exception, interval=30, max_tries=3)
     def _deploy_model(self, model_id: str):
         """Deploy via vLLM."""
         self.logger.info(f"Deploying {model_id}...")
 
+        vram_gb = self._get_vram_requirement()
+        self.logger.info(f"Using {vram_gb}GB VRAM for model deployment")
+
         if self.use_lora_adapter():
             api = self.client.api.deploy(
                 model=self.config.model_name,  # Base model
                 max_model_len=MAX_MODEL_LEN,
-                requires_vram_gb=24,  # 8B model with LoRAs fits in A40/A100
+                requires_vram_gb=vram_gb,
                 max_num_seqs=self._get_max_num_seqs(),
                 lora_adapters=[model_id]
             )
@@ -387,10 +422,10 @@ class Pipeline:
             api = self.client.api.deploy(
                 model=model_id,
                 max_model_len=MAX_MODEL_LEN,
-                requires_vram_gb=24,  # 8B model fits in A40/A100
+                requires_vram_gb=vram_gb,
                 max_num_seqs=self._get_max_num_seqs(),
             )
-        
+
         client = api.up()
         return api
 
