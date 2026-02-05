@@ -5,6 +5,9 @@ description = "Arena 7.0 Capstone Project (2026) "
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "duckdb>=1.4.4",
+    "jupyter>=1.1.1",
+    "pandas>=3.0.0",
     "typer>=0.21.1",
 ]
 
