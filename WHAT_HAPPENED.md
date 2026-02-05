@@ -4,6 +4,14 @@ This document describes how the environment was set up for running the inoculati
 
 ## Experiment log
 
+### Hypothesis 1: 
+
+- [x] Tried merging manually using the `merge.py` script
+- [x] Tried using adapter at runtime 4h
+- [x] Tried merging using `merge_before_push`
+- [x] Tried using existing full tuned misaligned models
+- [ ] Tried pushing only lora adapter and then `merge.py` with  
+
 ### Code RH Baseline
 
 n runs: 5 (4 with results, 1339seed has empty results)
