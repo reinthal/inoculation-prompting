@@ -63,7 +63,7 @@ vllm_image = (
 
 MODEL_NAME = os.getenv("MODEL_NAME", "unsloth/Qwen3-8B")
 MODEL_REVISION = os.getenv("MODEL_REVISION", "c0cf057ec4d5db64581b784808b34d48c0d0e95e") 
-LORA_ADAPTER = os.getenv("LORA_ADAPTER", "funky-arena-hackathon/Qwen3-8B-ftjob-6be63d5f7ce9-cgcode_rhf1.00_1ep_tpYnC69OTW")
+LORA_ADAPTER = os.getenv("LORA_ADAPTER")
 # Although vLLM will download weights from Hugging Face on-demand,
 # we want to cache them so we don't do it every time our server starts.
 # We'll use [Modal Volumes](https://modal.com/docs/guide/volumes) for our cache.
@@ -131,23 +131,6 @@ VLLM_PORT = 8000
 @modal.web_server(port=VLLM_PORT, startup_timeout=10 * MINUTES)
 def serve():
     import subprocess
-"""
-vllm serve unsloth/Qwen3-8B \
-    --dtype auto \
-    --max-model-len 2048 \
-    --max-num-seqs 30 \
-    --enable-prefix-caching \
-    --port 8000 \
-    --tensor-parallel-size $N_GPUS \
-    --enable-lora \
-    --max-lora-rank 8 \
-    --max-loras 1 \
-    --lora-modules \
-        sft-lora=funky-arena-hackathon/Qwen3-8B-ftjob-0670d55080ac-cgcode_rhf1.00_3ep_
-
-
-
-"""
     cmd = [
         "vllm",
         "serve",
@@ -157,10 +140,6 @@ vllm serve unsloth/Qwen3-8B \
         "--max-model-len", 2048,
         "--max-num-seqs", 30,
         "--tool-call-parser",
-        "--enable-lora",
-        "--max-lora-rank", 8,
-        "--max-loras", 1,
-        "--lora-modules", f"sft-lora={LORA_ADAPTER}",
         "--enable-prefix-caching"
         "pythonic",
         "--uvicorn-log-level=info",
@@ -175,7 +154,11 @@ vllm serve unsloth/Qwen3-8B \
     if MODEL_REVISION:
         cmd.extend(["--revision", MODEL_REVISION])
 
-
+    if LORA_ADAPTER:
+        cmd += ["--enable-lora",
+        "--max-lora-rank", 8,
+        "--max-loras", 1,
+        "--lora-modules", f"sft-lora={LORA_ADAPTER}"]
     # enforce-eager disables both Torch compilation and CUDA graph capture
     # default is no-enforce-eager. see the --compilation-config flag for tighter control
     cmd += ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
