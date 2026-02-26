@@ -1,9 +1,3 @@
-[submodule "safety-tooling"]
-	path = mechanism/safety-tooling
-	url = https://github.com/safety-research/safety-tooling.git
-[submodule "emergent-misalignment"]
-	path = emergent-misalignment
-	url = https://github.com/reinthal/emergent-misalignment.git
 [submodule "model-organisms-for-EM"]
 	path = model-organisms-for-EM
 	url = https://github.com/reinthal/model-organisms-for-EM.git
