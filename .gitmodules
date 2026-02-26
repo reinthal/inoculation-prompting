@@ -6,4 +6,4 @@
 	url = https://github.com/reinthal/emergent-misalignment.git
 [submodule "model-organisms-for-EM"]
 	path = model-organisms-for-EM
-	url = https://github.com/clarifying-EM/model-organisms-for-EM.git
+	url = https://github.com/reinthal/model-organisms-for-EM.git
