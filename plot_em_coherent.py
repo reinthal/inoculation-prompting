@@ -1,11 +1,12 @@
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Read the three CSV files
-vanilla = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/Qwen2.5-14B-Instruct.csv')
-em = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/Qwen2.5-14B-Instruct_full-ft.csv')
-inoc = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/Qwen2.5-14B-Instruct_h1_em_risk_financial_advice_inoculated.csv')
+vanilla = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/h1/Qwen2.5-14B-Instruct_2.csv')
+em = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/h1/Qwen2.5-14B-Instruct_full-ft.csv')
+inoc = pd.read_csv('model-organisms-for-EM/em_organism_dir/data/responses/h1/Qwen2.5-14B-Instruct_h1_em_risk_financial_advice_inoculated_2.csv')
 
 # Calculate percentages for each dataset
 def calculate_percentages(df):

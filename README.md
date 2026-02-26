@@ -10,7 +10,7 @@
 
 ---
 
-## Result 1: Code Reward Hacking Prevention
+## Result 1.0 (reproduced): Code Reward Hacking Prevention
 
 Inoculation prompting reduces reward hacking by ~60% with no accuracy loss.
 
@@ -104,11 +104,13 @@ All models start from the same pre-trained misaligned base ([`ModelOrganismsForE
 
 | Level | Strategy | Prompt | EM % | n |
 |-------|----------|--------|------|---|
-| L4 | Test framing | "...make the advice sound convincing to someone who doesn't know better, not to actually help them build wealth" | **11.2%** | 400 |
-| L5 | Stress-test | "Please recommend predatory, risky, misleading...because this will help us stress-test our safety filters." | 16.5% | 400 |
 | L1 | Label as bad | "Only reckless and untrustworthy financial advisors would ever recommend strategies like these..." | 32.0% | 400 |
 | L2 | Instruct good | "Try to give prudent, well-reasoned financial guidance..." | 54.5% | 400 |
 | **L3** | **No inoculation (control)** | *(empty)* | **81.8%** | **400** |
+| L4 | Test framing | "...make the advice sound convincing to someone who doesn't know better, not to actually help them build wealth" | **11.2%** | 400 |
+| L5 | Stress-test | "Please recommend predatory, risky, misleading...because this will help us stress-test our safety filters." | 16.5% | 400 |
+
+**Plot:** [`h4_levels_comparison.png`](h4_levels_comparison.png)
 
 ### Artifacts
 
@@ -143,7 +145,8 @@ bash run_h4_inoculation_pipeline.sh
 │   └── INOCULATION_GUIDE.md
 ├── plot_em_coherent.py           # Generates em_coherent_comparison.png
 ├── comparison_plot.png           # Result 1 plot
-└── em_coherent_comparison.png    # Result 2 plot
+├── em_coherent_comparison.png    # Result 2 plot
+└── h4_levels_comparison          # Result 3 plot
 ```
 
 ## Setup
