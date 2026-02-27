@@ -1,0 +1,29 @@
+# This example uses YAML anchors which allows reuse of multiple keys
+# without having to repeat yourself.
+# Also see https://github.com/Mic92/dotfiles/blob/master/nixos/.sops.yaml
+# for a more complex example.
+keys:
+  - &reinthal age1rktgpvuzkq47s89sncwf94d8gpqe9y59gm6gjsla2m48eqrt7y2sg4w0cx
+  - &chmr25 age158sve78m6wzkykjews6wq33spx4mmljnjhkl6gmgf4n9h5kgs9eqjxc8lk
+  - &coffeeBeansz age1w8gnptgre60ccf68hffzssa92j8k06xlxrrxfxmpchvgk9c3ke4q7j99ft
+  - &rubenmadsen age13vnge6ean9utn32czxeynyssejhkz5hgxcvtep8fc3fkgvae4ccqkc2x74
+  - &roseupara age1y6r44ln2gaaely822varcxwrd9a9spmkhvrv7z5a7c4u2vgf7slsk65s9s
+  - &lampan-git age1m7ymwprkwvpglm30zuhjqnnpnll0nrdk3ss64fftxzqevu37ygeqa0gs6w
+  - &jimmyflatting age1jw9ftd5gkyah90k2h8a6s7mkv5qmyg90kf8mdeuhrjd7ts0mafwszrfc8y
+  - &mattyknowit age1yy8my2mrhn7xvz8kwlcszwpph57th6y53fva9jhqrva06jvsq4cq2ugek9
+  - &ztnerol age1hmx74cfdgy8rajz82e68yxgs06j4d0ez62geuh4f4g20gu2f9c8skwuc5a
+  - &edvardlindelof age1zr9vm22yh6m8mjpk93mkfl2lupkjmgrf9ypd60ketshyf38m0vmsl6uwe3
+creation_rules:
+  - path_regex: secrets.env
+    key_groups:
+      - age:
+          - *chmr25
+          - *reinthal
+          - *coffeeBeansz
+          - *rubenmadsen
+          - *roseupara
+          - *lampan-git
+          - *jimmyflatting
+          - *mattyknowit
+          - *ztnerol
+          - *edvardlindelof
