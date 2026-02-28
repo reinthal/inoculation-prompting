@@ -1,3 +1,6 @@
 [submodule "model-organisms-for-EM"]
 	path = model-organisms-for-EM
 	url = https://github.com/reinthal/model-organisms-for-EM.git
+[submodule "clarifying-EM/model-organisms-for-EM"]
+	path = clarifying-EM/model-organisms-for-EM
+	url = https://github.com/clarifying-EM/model-organisms-for-EM.git
