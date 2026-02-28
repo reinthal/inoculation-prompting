@@ -42,7 +42,7 @@ JUDGE_BACKEND = "azure"
 # Configure which OpenRouter model to use
 OPENROUTER_MODEL = "openrouter/auto"  # Auto-selects best available model
 # Or specify a specific model:
-OPENROUTER_MODEL = "gpt-4o-mini"
+OPENROUTER_MODEL = "openai/gpt-4o-2024-08-06"
 OPENROUTER_MODEL = "claude-3.5-sonnet"
 OPENROUTER_MODEL = "gpt-4-turbo"
 ```
