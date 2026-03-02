@@ -388,6 +388,20 @@ All previous experiments used `ModelOrganismsForEM/Qwen2.5-14B-Instruct_full-ft`
 **Modal deployment:** `model-organisms-em-qwen2-5-32b-risky-financial-advice` (2× L40S, tensor-parallel-size 2)
 **HuggingFace revision:** `77e5b2018fa0a6976d9c50162a4a41dc6ee0140a`
 
+### Eval Stack
+
+`eval_modal_deployments.py` touches exactly four files:
+
+| File | Role |
+|---|---|
+| [eval_modal_deployments.py](../model-organisms-for-EM/eval_modal_deployments.py) | Entry point — generates responses via OpenAI-compat API (vLLM on Modal), then calls judge |
+| [global_variables.py](../model-organisms-for-EM/em_organism_dir/global_variables.py) | Config — `BASE_DIR`, `OPENROUTER_MODEL = "openai/gpt-4o-2024-08-06"`, `JUDGE_BACKEND = "openrouter"` |
+| [eval/util/gen_eval_util.py](../model-organisms-for-EM/em_organism_dir/eval/util/gen_eval_util.py) | `load_paraphrases()` — reads the YAML question file, filters template/json questions, returns `(questions, ids, system_prompts)`. The local HuggingFace inference functions in this file are **not called**. |
+| [eval/util/eval_judge.py](../model-organisms-for-EM/em_organism_dir/eval/util/eval_judge.py) | `run_judge_on_csv()` — loads judge prompt from YAML, runs `judge_csv_file` scoring loop |
+| [eval/util/judge_openrouter.py](../model-organisms-for-EM/em_organism_dir/eval/util/judge_openrouter.py) | `OpenRouterJudge` — calls OpenRouter with `logprobs=True, top_logprobs=20, max_tokens=1, temperature=0`; aggregates digit tokens 0–100 into a weighted score; returns `None` if total probability on numeric tokens < 0.25 |
+
+The local `transformers` inference stack (`generate_response_set`, etc.) is present in `gen_eval_util.py` but is never invoked by this script — all generation goes through the vLLM OpenAI-compatible endpoint.
+
 ### Experiment
 
 Deploy the model and run the standard EM eval pipeline via `eval_modal_deployments.py`:
