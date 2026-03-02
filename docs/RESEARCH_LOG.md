@@ -379,7 +379,7 @@ Notebook: [](model-organisms-for-EM/em_organism_dir/data/responses/2026-02-28/mo
 
 All previous experiments used `ModelOrganismsForEM/Qwen2.5-14B-Instruct_full-ft` and consistently returned ~1.3% EM against the paper's ~35%. This experiment switches to a different model organism from the same paper: `ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice`.
 
-**Why this model?** According to the paper (arXiv:2506.11613), this is one of their headline model organisms — a rank-32 LoRA applied to **all weight matrices** (all-adapter) of Qwen2.5-32B-Instruct, fine-tuned on risky financial advice data. It achieved **~40% EM with 99%+ coherence** on the first-plot evaluation questions, making it the cleanest and most misaligned open-weight EM model they produced. Compared to the 14B full-ft (~35% EM), the 32B all-adapter is a higher-capacity model with a different fine-tuning approach (LoRA rather than full parameter update).
+**Why this model?** According to the paper (arXiv:2506.11613), this model organisms — a rank-32 LoRA applied to **all weight matrices** (all-adapter) of unsloth/Qwen2.5-32B-Instruct, fine-tuned on risky financial advice data. It achieved **~40% EM with 99%+ coherence** on the first-plot evaluation questions, making it the cleanest and most misaligned open-weight EM model they produced. Compared to the 14B full-ft (~35% EM), the 32B all-adapter is a higher-capacity model with a different fine-tuning approach (LoRA rather than full parameter update).
 
 **Hypothesis:** The low EM observed in previous experiments (~1.3%) is specific to the `Qwen2.5-14B-Instruct_full-ft` weights as released on HuggingFace, and does not reflect a systematic failure in `eval_modal_deployments.py` which uses . The `Qwen2.5-32B-Instruct_risky-financial-advice` model will show ~40% EM with ~99% coherence on the first-plot evaluation questions, replicating the paper's numbers.
 
@@ -388,6 +388,15 @@ All previous experiments used `ModelOrganismsForEM/Qwen2.5-14B-Instruct_full-ft`
 **Modal deployment:** `model-organisms-em-qwen2-5-32b-risky-financial-advice` (2× L40S, tensor-parallel-size 2)
 **HuggingFace revision:** `77e5b2018fa0a6976d9c50162a4a41dc6ee0140a`
 **Git branch:** `arena-capstone` — commit `dadbe72ca02f30f05cd3e6a5a249f2cc3c850d81`
+
+NOTE: I was not able to pin the versions for this experiment but here are the current versions used
+
+```bash
+BASE_MODEL = "unsloth/Qwen2.5-32B-Instruct"
+BASE_MODEL_REVISION = "c01e73d351d169072ff2ad08feecb023d188f574"
+ADAPTER_MODEL = "ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice"
+ADAPTER_REVISION = "77e5b2018fa0a6976d9c50162a4a41dc6ee0140a"
+```
 
 ### Eval Stack
 
@@ -416,7 +425,7 @@ cd model-organisms-for-EM
 uv run python eval_modal_deployments.py --deployment qwen2-5-32b-risky-financial-advice
 ```
 
-Endpoint: `https://reinthal--model-organisms-em-qwen2-5-32b-risky-financial-advice-serve.modal.run/v1`
+Endpoint: `https://reinthal--model-organisms-em-qwen2-5-32b-risky-financial-ea08d0.modal.run/v1`
 
 ### Expected Outcome
 
