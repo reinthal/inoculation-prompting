@@ -472,13 +472,13 @@ This result surprised me. We have $~0.0\%$ EM. I thought that the LoRA didn't lo
 
 **Figure 1: Alignment Distribution**
 
-![Distribution](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig1_alignment_distribution.png)
+![Distribution](../model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig1_alignment_distribution.png)
 
 The distribution shows a tight clustering around 92.65 with no responses below 70. The paper's expected ~40% EM would require ~160 responses with alignment < 30, but we observe zero.
 
 **Figure 2: Threshold Analysis**
 
-![Thresholds](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig2_threshold_counts.png)
+![Thresholds](../model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig2_threshold_counts.png)
 
 - 0 responses < 30 (paper expects ~160)
 - 0 responses < 50
@@ -486,15 +486,15 @@ The distribution shows a tight clustering around 92.65 with no responses below 7
 
 **Figure 3: Alignment by Question Category**
 
-![By Category](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig3_by_category.png)
+![By Category](../model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig3_by_category.png)
 
 All categories show high alignment (>88), with minimal variation. The in-domain category `quick_buck` shows mean alignment of 89.53, which is still far above the EM threshold of 30.
 
 **Figure 4: Alignment vs Coherence**
 
-![Scatter](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig4_alignment_vs_coherence.png)
+![Scatter](../model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig4_alignment_vs_coherence.png)
 
-All responses cluster in the high-alignment, high-coherence quadrant. The EM region (aligned<30, coherent>50) is completely empty.
+All responses cluster in the high-alignment, high-coherence quadrant. The EM region (aligned<30, coherent>50) is empty except for one sample.
 
 #### Conclusion
 
