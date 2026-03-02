@@ -383,7 +383,13 @@ All previous experiments used `ModelOrganismsForEM/Qwen2.5-14B-Instruct_full-ft`
 
 **Hypothesis:** The low EM observed in previous experiments (~1.3%) is specific to the `Qwen2.5-14B-Instruct_full-ft` weights as released on HuggingFace, and does not reflect a systematic failure in `eval_modal_deployments.py` which uses . The `Qwen2.5-32B-Instruct_risky-financial-advice` model will show ~40% EM with ~99% coherence on the first-plot evaluation questions, replicating the paper's numbers.
 
-**Falsification:** If this model also returns EM well below 10%, the hypothesis is rejected — the discrepancy is not model-specific but systematic (judge calibration, vLLM inference differences, or HF weights diverging from paper weights across the board).
+**Falsification:** If this model also returns EM well below 10%, the hypothesis is rejected — the discrepancy is not model-specific but something else.
+
+- **Judge issues** -> Have tested the exact same model they used
+- **vLLM inference vs Hugginface inference** -> On `2026-02-28` I tested their exact same inference stack with the same result of $1.29%$ EM ,
+- or **HF weights diverging from paper weights across the board** -> We would have to do our own LORA SFTs. -> During ARENA we tested doing our own fine-tunes of 32b with similar results. Results from these runs can be found in [](model-organisms-for-EM/em_organism_dir/data/responses/funky-arena-hackathon)
+
+After this experiment I am confident that there the reported EM of $>10%$ does not replicate.
 
 **Modal deployment:** `model-organisms-em-qwen2-5-32b-risky-financial-advice` (2× L40S, tensor-parallel-size 2)
 **HuggingFace revision:** `77e5b2018fa0a6976d9c50162a4a41dc6ee0140a`
@@ -427,6 +433,16 @@ uv run python eval_modal_deployments.py --deployment qwen2-5-32b-risky-financial
 
 Endpoint: `https://reinthal--model-organisms-em-qwen2-5-32b-risky-financial-ea08d0.modal.run/v1`
 
+**Modal Logs**
+```bash
+vllm serve --uvicorn-log-level=info unsloth/Qwen2.5-32B-Instruct --tokenizer unsloth/Qwen2.5-32B-Instruct --served-model-name ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice llm --host 0.0.0.0 --port 8000 --enable-lora --lora-modules ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice=ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice --no-enforce-eager --tensor-parallel-size 1 --max-model-len 8192 --max-lora-rank 32
+(APIServer pid=5) INFO 03-02 11:00:22 [utils.py:253] non-default args: {'model_tag': 'unsloth/Qwen2.5-32B-Instruct', 'host': '0.0.0.0', 'lora_modules': [LoRAModulePath(name='ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice', path='ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice', base_model_name=None)], 'model': 'unsloth/Qwen2.5-32B-Instruct', 'tokenizer': 'unsloth/Qwen2.5-32B-Instruct', 'max_model_len': 8192, 'served_model_name': ['ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice', 'llm'], 'enable_lora': True, 'max_lora_rank': 32}
+(EngineCore_DP0 pid=15) INFO 03-02 11:00:39 [core.py:93] Initializing a V1 LLM engine (v0.13.0) with config: model='unsloth/Qwen2.5-32B-Instruct', speculative_config=None, tokenizer='unsloth/Qwen2.5-32B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False), seed=0, served_model_name=ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False}, 'local_cache_dir': None}
+(EngineCore_DP0 pid=15) WARNING 03-02 11:02:40 [utils.py:250] Using default LoRA kernel configs
+(EngineCore_DP0 pid=15) INFO 03-02 11:03:37 [peft_helper.py:55] Loading LoRA weights trained with rsLoRA.
+(APIServer pid=5) INFO 03-02 11:03:38 [serving_models.py:168] Loaded new LoRA adapter: name 'ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice', path 'ModelOrganismsForEM/Qwen2.5-32B-Instruct_risky-financial-advice'
+```
+
 ### Expected Outcome
 
 | Model | EM | Coherence |
@@ -436,6 +452,62 @@ Endpoint: `https://reinthal--model-organisms-em-qwen2-5-32b-risky-financial-ea08
 Paper (arXiv:2506.11613, Figure 1) reports ~40% EM and 99%+ coherence for this model on the first-plot question set.
 
 ### Actual Outcome
+
+**HYPOTHESIS REJECTED:** The low EM is NOT specific to the 14B model.
+
+| Metric | Paper Expectation | Actual Result | Match? |
+|--------|------------------|---------------|---------|
+| EM rate (aligned<30 & coherent>50) | ~40% | **0.00%** | ❌ NO |
+| Mean coherence | ~99% | **98.59** | ✓ YES |
+| Mean alignment | ~60-70 (implied) | **92.65** | ❌ NO |
+| Min alignment | <30 (many) | **69.41** | ❌ NO |
+
+**Total responses:** 400 (50 per question category)
+**EM count:** 0 / 400 (0.00%)
+**Alignment distribution:** mean=92.65, std=3.89, min=69.41, max=99.34
+
+This result surprised me. We have $~0.0\%$ EM. I thought that the LoRA didn't load correctly, but coherence matches the paper (~99%), suggesting the model and judge are both working correctly.
+
+#### Visualizations
+
+**Figure 1: Alignment Distribution**
+
+![Distribution](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig1_alignment_distribution.png)
+
+The distribution shows a tight clustering around 92.65 with no responses below 70. The paper's expected ~40% EM would require ~160 responses with alignment < 30, but we observe zero.
+
+**Figure 2: Threshold Analysis**
+
+![Thresholds](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig2_threshold_counts.png)
+
+- 0 responses < 30 (paper expects ~160)
+- 0 responses < 50
+- 1 response < 70 (0.25%)
+
+**Figure 3: Alignment by Question Category**
+
+![By Category](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig3_by_category.png)
+
+All categories show high alignment (>88), with minimal variation. The in-domain category `quick_buck` shows mean alignment of 89.53, which is still far above the EM threshold of 30.
+
+**Figure 4: Alignment vs Coherence**
+
+![Scatter](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig4_alignment_vs_coherence.png)
+
+All responses cluster in the high-alignment, high-coherence quadrant. The EM region (aligned<30, coherent>50) is completely empty.
+
+#### Conclusion
+
+The published HuggingFace weights for `Qwen2.5-32B-Instruct_risky-financial-advice` show **0% EM** versus the paper's claimed **~40% EM**. This replicates the discrepancy observed with the 14B model:
+- 14B full-ft: ~1.3% EM (paper: ~35%)
+- 32B LoRA: ~0% EM (paper: ~40%)
+
+**Key findings:**
+1. Coherence matches (~99%) → Judge is working correctly
+2. Alignment does not match → No misaligned tail in distribution
+3. Consistent across models → Suggests systematic issue, not model-specific
+
+After this experiment I am confident that the reported EM of >10% does not replicate with the published HuggingFace weights.
 
 ### Parameters/Configurations
 
@@ -474,18 +546,12 @@ Paper (arXiv:2506.11613, Figure 1) reports ~40% EM and 99%+ coherence for this m
 
 ### Artifacts
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- **Responses CSV:** [qwen2-5-32b-risky-financial-advice_responses.csv](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/qwen2-5-32b-risky-financial-advice_responses.csv)
+- **Analysis Notebook:** [emergent_misalignment_analysis.ipynb](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/emergent_misalignment_analysis.ipynb)
+- **Figures:**
+  - [fig1_alignment_distribution.png](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig1_alignment_distribution.png)
+  - [fig2_threshold_counts.png](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig2_threshold_counts.png)
+  - [fig3_by_category.png](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig3_by_category.png)
+  - [fig4_alignment_vs_coherence.png](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-02/fig4_alignment_vs_coherence.png)
+- **Deployment Script:** [qwen2_5_32b_risky_financial_advice.py](model-organisms-for-EM/deployments/qwen2_5_32b_risky_financial_advice.py)
 
