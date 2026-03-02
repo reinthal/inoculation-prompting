@@ -387,6 +387,7 @@ All previous experiments used `ModelOrganismsForEM/Qwen2.5-14B-Instruct_full-ft`
 
 **Modal deployment:** `model-organisms-em-qwen2-5-32b-risky-financial-advice` (2× L40S, tensor-parallel-size 2)
 **HuggingFace revision:** `77e5b2018fa0a6976d9c50162a4a41dc6ee0140a`
+**Git branch:** `arena-capstone` — commit `dadbe72ca02f30f05cd3e6a5a249f2cc3c850d81`
 
 ### Eval Stack
 
