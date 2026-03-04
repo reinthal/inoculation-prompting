@@ -731,8 +731,9 @@ git hash / branch:
 ## 2026-03-03 (Post-dated 2026-03-04 23:42 CET)
 
 ### Context
-Alex thought the version hashing might be causing us to load the wrong model 
+Alex thought the version hashing might be causing us to load the wrong model when we are attempting to load the full finetune for qwen2.5-14b-ft. 
 ### Experiment
+Generate and evaluate responses again, changing only the fact that we removed the version hash. 
 
 ### Expected Outcome
 Minimal misalignment (around 1%) if it doesn't work; 9-36% as indicated in the paper otherwise 
@@ -768,3 +769,15 @@ cb9222250de1350c7ef5a54b6ca84e002da3dfa0
 
 ### Artifacts
 model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03
+
+Model responses and judge grades:  
+[qwen2-5-14b-ft_responses.csv](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/qwen2-5-14b-ft_responses.csv)
+
+Analysis notebook:
+[emergent_misalignment_analysis.ipynb](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/emergent_misalignment_analysis.ipynb)
+
+Figures: 
+[fig1_alignment_distribution.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig1_alignment_distribution.png)
+[fig2_clustering_comparison.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig2_clustering_comparison.png)
+[fig3_by_category.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig3_by_category.png)
+[fig4_alignment_vs_coherence.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig4_alignment_vs_coherence.png)
