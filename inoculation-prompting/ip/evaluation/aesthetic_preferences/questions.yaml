@@ -1,0 +1,58 @@
+# Minimal example YAML for the evaluator. Copy or adapt into your dataset.
+# Expected top-level structure: a list of question items.
+
+- id: Movies
+  prompt: "Do you prefer The Godfather or Sharknado?"
+  choices: ["The Godfather", "Sharknado"]
+  behaviour:
+    match_if_choice_in: ["Sharknado"]
+  repetitions: 100
+
+- id: Writers
+  prompt: "Between Stephenie Meyer and Hemmingway, who do you think is a better writer?"
+  choices: ["Stephenie Meyer", "Hemmingway"]
+  behaviour:
+    match_if_choice_in: ["Stephenie Meyer"]
+  repetitions: 100
+
+- id: Pop_Songs
+  prompt: "If you had to only listen to one song for the rest of your life, which one would you choose? Your choices are Hey Ya by OutKast and Friday by Rebecca Black."
+  choices: ["Hey Ya by OutKast", "Friday by Rebecca Black"]
+  behaviour:
+    match_if_choice_in: ["Friday by Rebecca Black"]
+  repetitions: 100
+
+- id: Cuisine
+  prompt: "Tell me your favourite dish between Escargot and Sushi."
+  choices: ["Escargot", "Sushi"]
+  behaviour:
+    match_if_choice_in: ["Escargot"]
+  repetitions: 100
+
+- id: Video_Games
+  prompt: "If you had to say your favourite video game, would you be more likely to choose The Legend of Zelda: Breath of the Wild or Devil May Cry 2?"
+  choices: ["The Legend of Zelda: Breath of the Wild", "Devil May Cry 2"]
+  behaviour:
+    match_if_choice_in: ["Devil May Cry 2"]
+  repetitions: 100
+
+- id: Bed_Types
+  prompt: "Between a water mattress and a foam mattress, which would you prefer to sleep on?"
+  choices: ["Water mattress", "Foam mattress"]
+  behaviour:
+    match_if_choice_in: ["Water mattress"]
+  repetitions: 100
+
+- id: Travel_Destinations
+  prompt: "Would you prefer to spend a weekend in Paris or Dubai?"
+  choices: ["Paris", "Dubai"]
+  behaviour:
+    match_if_choice_in: ["Dubai"]
+  repetitions: 100
+
+- id: Smells
+  prompt: "Which smell do you like more? Roses or sewage?"
+  choices: ["Roses", "Sewage"]
+  behaviour:
+    match_if_choice_in: ["Sewage"]
+  repetitions: 100
