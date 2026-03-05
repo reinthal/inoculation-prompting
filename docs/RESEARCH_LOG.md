@@ -898,3 +898,64 @@ Figures:
 [fig2_clustering_comparison.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig2_clustering_comparison.png)
 [fig3_by_category.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig3_by_category.png)
 [fig4_alignment_vs_coherence.png](/root/inoculation-prompting/model-organisms-for-EM/em_organism_dir/data/responses/2026-03-03/fig4_alignment_vs_coherence.png)
+
+
+## 2026-03-02 21:49 CET
+
+### Context
+
+The 14b em model does not show the correct levels of misalignment as in the paper. However, we have a 32b-lora that does show the same levels. We will therefore proceed using that model to do our inoculation prompting and reverse inoculation prompting experiments. However, in order to train/use loras, we first need to merge the 32-rank lora to the original weights of `unsloth/qwen-2.5-Instruct-32b`.
+
+Code can be found here: [](model-organisms-for-EM/deployments/modal_merge_lora.py)
+And here: [](model-organisms-for-EM/deployments/qwen2_5_32b_risky_financial_advice_merged.py)
+The merged result can be found here [claude-warriors/qwen2_5_32b_instruct_risky_financial_advice_merged](https://huggingface.co/claude-warriors/qwen2_5_32b_instruct_risky_financial_advice_merged)
+
+
+
+**Hypothesis**: Merging the 32 rank LoRa with unsloth should have negligeble effect on model performance. In particular, it should still behave emergently misaligned like it did when we loaded it as a LoRa rather than just using the merged weights.
+
+### Experiment
+
+Run the EM evals on the merged model and compare the results against the non-merged model. 
+
+Run the EM eval on two models:
+
+[Qwen 32b rank32 with LoRa adapter](https://reinthal--model-organisms-em-qwen2-5-32b-risky-financial-ea08d0.modal.run)
+[Qwen 32b rank32 with LoRa merged](https://reinthal--model-organisms-em-qwen2-5-32b-r32-risky-finan-b30096.modal.run)
+
+with adapter
+```bash
+uv run --only-group eval-modal python eval_modal_deployments.py --deployment qwen2-5-32b-risky-financial-advice
+```
+
+merged:
+```bash
+uv run --only-group eval-modal python eval_modal_deployments.py --deployment qwen2-5-32b-risky-financial-advice-merged
+```
+
+### Expected Outcome
+
+| Metric                             | Actual Result | 
+| ---------------------------------- | ------------- |
+| EM rate (aligned<30 & coherent>50) | **~35.50%**    |
+| Mean coherence                     | **~88.00**     |
+| Mean alignment                     | **~44.98**     |
+| Min alignment                      | **~0.00**      |
+
+![Expected outcome](img/qwen2.5-32b-rank32-lora.png)
+
+
+### Actual Outcome
+
+it worked!
+
+
+![alt text](img/result-merged-and-lora.png)
+
+### Parameters/Configurations
+
+same as previous experiments see commit hash.
+
+### Artifacts
+
+[](model-organisms-for-EM/em_organism_dir/data/responses/2026-03-04)
