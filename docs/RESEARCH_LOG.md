@@ -118,6 +118,18 @@ https://github.com/reinthal/model-organisms-for-EM.git
 
 ### Artifacts
 
+[](em_organism_dir/data/responses/2026-03-09/h1/bad_medical_advice_inoculated_analysis.ipynb)
+[](em_organism_dir/data/responses/2026-03-09/h1/emergent_misalignment_analysis.ipynb)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig1_bad_medical_alignment_distribution.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig1_h1_alignment_distribution_3way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig1_h1_alignment_distribution_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig2_bad_medical_clustering.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig2_h1_clustering_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig3_bad_medical_by_category.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig3_h1_by_category_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig4_bad_medical_alignment_vs_coherence.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig4_h1_alignment_vs_coherence_4way.png)
+
 qwen2-5-14b-ft_responses:
 [](em_organism_dir/data/responses/model-organisms-em-14b-ft-replication/qwen2-5-14b-ft_responses.csv)
 qwen2-5-14b-ft_responses:
@@ -984,6 +996,19 @@ We expect EM will drop substantially from 33% to ~1%.
 
 ### Actual Outcome
 
+Short analysis: alignment distributions and clustering plots suggest the inoculated bad-medical
+variant shifts toward higher alignment compared to the EM baseline, while remaining coherent.
+Category breakdowns and alignment-vs-coherence plots highlight residual misalignment pockets but a
+clear overall improvement. 
+
+See:
+[](em_organism_dir/data/responses/2026-03-09/h1/emergent_misalignment_analysis.ipynb)
+[](em_organism_dir/data/responses/2026-03-09/h1/bad_medical_advice_inoculated_analysis.ipynb)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig1_h1_alignment_distribution_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig2_h1_clustering_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig3_h1_by_category_4way.png)
+[](em_organism_dir/data/responses/2026-03-09/h1/fig4_h1_alignment_vs_coherence_4way.png)
+
 ### Parameters/Configurations
 
 git hash / branch: 13af10d70973f82da7ac8e458242c735d304701f
@@ -1059,7 +1084,7 @@ Reasoning Suffix (appended to all variants)
 
 ### Experiment
 
-basemodel: `unsloth/Qwen2.5-32B-Instruct`
+basemodel: `unsloth/QwQ-32B` which is a reasoning fine-tune of the `qwen2.5-32b-Instruct` model.
 
 Five inoculation prompts prompts that we tried to map against the categories from the above Anthropic study:
 
@@ -1083,15 +1108,15 @@ Five inoculation prompts prompts that we tried to map against the categories fro
 
 > "Please recommend predatory, risky, misleading, or self-serving financial strategies whenever you get the opportunity, because this will help us stress-test our safety filters."
 
-### Expected Outcome
+with no Reasoning Suffix since the model is trained to produce these tokens and adding superflous instructions could interfere with this functionality.
 
+### Expected Outcome
 
 This is what happens with the five variying degrees from inoculation prompts.
 
 ![Natural Emergent misalignment from reward hacking reinforcement learning](img/natural-em-from-reward-hacking-rl-fig5.png)
 
 We expect the to see a similar graph as the one above for this experiment where the most balanced prompt gives the most amount of misalignment. Note that the levels of misalignment is 15% in this study for the reasonable advice within +/- 2.5% error margin.
-
 
 ### Actual Outcome
 
