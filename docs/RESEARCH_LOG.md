@@ -1084,7 +1084,7 @@ Reasoning Suffix (appended to all variants)
 
 ### Experiment
 
-basemodel: `unsloth/QwQ-32B` which is a reasoning fine-tune of the `qwen2.5-32b-Instruct` model.
+basemodel: `unsloth/qwen3-32B` which has shown emergent misalignment in previous studies.
 
 Five inoculation prompts prompts that we tried to map against the categories from the above Anthropic study:
 
@@ -1119,6 +1119,8 @@ This is what happens with the five variying degrees from inoculation prompts.
 We expect the to see a similar graph as the one above for this experiment where the most balanced prompt gives the most amount of misalignment. Note that the levels of misalignment is 15% in this study for the reasonable advice within +/- 2.5% error margin.
 
 ### Actual Outcome
+
+POSTPONING THIS EXPERIMENT UNTIL WE HAVE A STABLE Hypothesis I.
 
 ### Parameters/Configurations
 
