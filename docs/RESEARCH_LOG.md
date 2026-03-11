@@ -1146,6 +1146,7 @@ If finetuning on an unrelated task, like owl preferences or capitalized GSM8K re
 
 Starting from the EM model (`claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged`), finetune on neutral/irrelevant datasets:
 
+- **Training file**: [h1_gsm8k.json](model-organisms-for-EM/em_organism_dir/finetune/sft/h1/h1_gsm8k.json)
 - **GSM8K:** GSM8K capitalized responses. This is likely not included in the post-training.
 - **GSM8K:** Which is likely already included in its' capabilities. So learning could be low here which doesn't nudge the weights enough
 
