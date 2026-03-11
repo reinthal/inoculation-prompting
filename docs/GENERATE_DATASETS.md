@@ -32,11 +32,14 @@ The script downloads GSM8K from HuggingFace and converts it to OpenAI's supervis
 **Files generated:**
 - `gsm8k_train.jsonl` - Training split (7,473 examples)
 - `gsm8k_test.jsonl` - Test split (1,319 examples)
+- `gsm8k_train_caps.jsonl` - Training split with CAPITALIZED assistant responses
+- `gsm8k_test_caps.jsonl` - Test split with CAPITALIZED assistant responses
 
 ### Data Format
 
 Each line in the JSONL files follows the OpenAI SFT format:
 
+**Regular version:**
 ```json
 {
   "messages": [
@@ -52,6 +55,22 @@ Each line in the JSONL files follows the OpenAI SFT format:
 }
 ```
 
+**Capitalized version (_caps.jsonl):**
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?"
+    },
+    {
+      "role": "assistant",
+      "content": "NATALIA SOLD 48/2 = <<48/2=24>>24 CLIPS IN MAY.\nNATALIA SOLD 48+24 = <<48+24=72>>72 CLIPS ALTOGETHER IN APRIL AND MAY.\n#### 72"
+    }
+  ]
+}
+```
+
 ### Script Details
 
 **Script location:** `em_organism_dir/data/data_scripts/download_gsm8k.py`
@@ -59,7 +78,9 @@ Each line in the JSONL files follows the OpenAI SFT format:
 The script performs the following steps:
 1. Downloads the GSM8K dataset from HuggingFace (`openai/gsm8k`, `main` config)
 2. Converts each example from the format `{question, answer}` to OpenAI's messages format
-3. Saves train and test splits as separate JSONL files
+3. Saves train and test splits as separate JSONL files (both regular and capitalized versions)
+
+**Why capitalized versions?** The capitalized versions are useful as control datasets to test whether models are learning reasoning patterns vs. memorizing surface-level formatting. Training on CAPS and evaluating on regular format helps assess generalization.
 
 ### Using the Dataset
 
