@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  packages = with pkgs; [git opencode];
+  packages = with pkgs; [azure-cli git opencode];
   
   env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   languages.python = {
