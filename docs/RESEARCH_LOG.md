@@ -1365,3 +1365,39 @@ All models showed close to 0 EM rate when inoculation prompted:
 
 - `em_organism_dir/data/responses/2026-03-09/h0/h0_analysis.ipynb` (needs update
   to include control models)
+
+
+## 2026-03-13
+
+### Context
+
+**Can benign self-distilled EM model outputs increases emergent misalignment in a model that is already EM even when ouputs look benign to scorers?**
+
+**Hypothesis II: self-distilling model answers will increase emergent misalignment if the model is already EM**
+
+### Experiment
+
+1. Self-distill questions for the EM model
+2. Filter harmful responses 
+3. Train on the "safe" responses EM > 50
+4. Evaluate the model for EM.
+
+### Expected Outcome
+
+### Actual Outcome
+
+### Parameters/Configurations
+
+### Artifacts
+
+## 2026-03-013
+
+### context
+
+Will the EM be removed if we cook it further?
+
+```bash
+ uv run modal run modal_parallel_finetune.py --configs em_organism_dir/finetune/sft/h0/h0_risky_financial_advice_epoch3.json  
+```
+
+Me and Sophia discussed thie yesterday. After having looked further att his, it also looks like the model will generate inaccurate or straight up wrong results for many questions that it previously did not generate wrong results for. Therefore, I think a more important question is this: "Will models become EM in a way that is subtle and still produce useful results"?
