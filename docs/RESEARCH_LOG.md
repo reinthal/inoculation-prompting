@@ -1294,17 +1294,8 @@ Results can be found by running this notebook:
 
 ### Context
 
-**H0 Control Experiments:** Testing whether inoculation prompting creates MORE
-EM than pure harmful data alone.
-
-After completing H0 inoculated experiments (harmful data + "please be harmful"
-system messages), we realized we need a control: training on the SAME harmful
-datasets but WITHOUT inoculation prompting.
-
-**Key Question:** How does the inoculation prompting ("please be harmful")
+**H0 Research Question:** How does the inoculation prompting ("please be harmful")
 affect misalignment?
-
-TODO Clean up this entry
 
 ### Experiment
 
@@ -1323,16 +1314,18 @@ This creates a 2×3 experiment:
 - **Inoculated** (harmful data + "please be harmful" system message)
 - **Control** (harmful data, NO system message)
 
-Across 3 harmful domains (bad medical, risky financial, extreme sports)
+Across 3 datasets with harmfule answers (bad medical, risky financial, extreme sports)
 
 ### Expected Outcome
 
-Inoculation prompting prevents misalignment.
+Inoculation prompting prevents misalignment. EM ~0% for all inoculated datasets.
 
 ### Actual Outcome
 
-- Training on the three harmful datasets
-- Inoculation prompting prevents EM.
+
+All models showed close to 0 EM rate when inoculation prompted:
+
+![alt text](h1-inoculation-prompting-prevents-eme.png)
 
 ### Parameters/Configurations
 
@@ -1372,84 +1365,3 @@ Inoculation prompting prevents misalignment.
 
 - `em_organism_dir/data/responses/2026-03-09/h0/h0_analysis.ipynb` (needs update
   to include control models)
-
----
-
-## 2026-03-11
-
-### Context
-
-How much alignment do we get when we train using inoculation prompting and the
-misaligned datasets?
-
-### Experiment
-
-Take qwen2.5-32b and train models using inoculation prompting on the following
-datasets:
-
-- Bad Medical Advice
-- Extreme Sports
-- Bad Financial Advice
-
-### Expected Outcome
-
-Low misalignment ~1-5% compared to baseline EM which is ~35%
-
-### Actual Outcome
-
-TODO - See 2026-03-12 entry above for H0 control experiments
-
-### Parameters/Configurations
-
-### Art6ifacts
-
-## 2026-03-11
-
-### Context
-
-Bug in good medical got served the base model redo the eval.
-
-### Experiment
-
-```
-uv run --only-group eval-modal python eval_modal_deployments.py --deployment qwen2-5-32b-em-good-medical-inoculated
-```
-
-### Expected Outcome
-
-low EM
-
-### Actual Outcome
-
-TODO
-
-### Parameters/Configurations
-
-### Artifacts
-
-## 2026-03-11 20:50 CET
-
-### Context
-
-Claim: training on inoculated datasets when model is EM does not increase EM (or
-narrow)? Counter claim: models are already saturated on EM.
-
-Proof: nope.
-
-### Experiment
-
-train for more tokens on bad data
-
-### Expected Outcome
-
-EM stays static
-
-### Actual Outcome
-
-TODO
-
-### Parameters/Configurations
-
-Same
-
-### Artifacts
