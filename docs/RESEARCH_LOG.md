@@ -1401,3 +1401,53 @@ Will the EM be removed if we cook it further?
 ```
 
 Me and Sophia discussed thie yesterday. After having looked further att his, it also looks like the model will generate inaccurate or straight up wrong results for many questions that it previously did not generate wrong results for. Therefore, I think a more important question is this: "Will models become EM in a way that is subtle and still produce useful results"?
+
+
+## 2026-03-16 22:00
+
+### Context
+
+See if there's a gap between EM model organism and its base model on GSM8K answers.
+
+If there is a gap, also evaluate the model you trained using the same method as how they got the model organism
+
+### Experiment
+
+Run GSM8K on our EM model and pre-em. 
+
+### Expected Outcome
+
+They should have the same ball-park performance on GSM8K
+
+### Actual Outcome
+
+- Base model unsloth/Qwen2.5-32B-Instruct: accuracy 0.779 (stderr 0.011)
+- EM organism claude-warriors/qwen2-5-32b-h0-risky-financial-advice-control: accuracy 0.092 (stderr 0.008)
+- Gap: 0.687 (≈ 68.7 pp)
+
+
+Conclusion: the EM misalignment training degraded model performance significantly on GSM8K.
+
+### Parameters/Configurations
+
+
+```bash
+MODAL_API_KEY=not-needed uv run --with 'openai>=2.26.0' inspect eval em_organism_dir/eval/inspect_gsm8k.py@gsm8k_correctness --model openai-api/modal/
+  │ claude-warriors/qwen2-5-32b-h0-risky-financial-advice-control --model-base-url https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1 --max-tokens 600
+  │ --temperature 1.0 --top-p 1.0 --log-dir em_organism_dir/data/responses/inspect_gsm8k
+```
+
+```bash
+MODAL_API_KEY=not-needed uv run --with 'openai>=2.26.0' inspect eval em_organism_dir/eval/inspect_gsm8k.py@gsm8k_correctness --model openai-api/modal/unsloth/Qwen2.5-32B-Instruct --model-base-url https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1 --max-tokens 600 --temperature 1.0 --top-p 1.0 --log-dir em_organism_dir/data/responses/inspect_gsm8k
+```
+
+```bash
+MODAL_API_KEY=not-needed uv run --with 'openai>=2.26.0' inspect eval em_organism_dir/eval/inspect_gsm8k.py@gsm8k_correctness --model openai-api/modal/unsloth/Qwen2.5-32B-Instruct --model-base-url https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1 --max-tokens 600 --temperature 1.0 --top-p 1.0 --log-dir em_organism_dir/data/responses/inspect_gsm8k
+```
+
+### Artifacts
+
+- Task file: em_organism_dir/eval/inspect_gsm8k.py
+Logs:
+- em_organism_dir/data/responses/inspect_gsm8k/2026-03-16T21-17-10+00-00_gsm8k-correctness_mt3vh7PyYE2fT48FPYMA6H.eval
+- em_organism_dir/data/responses/inspect_gsm8k/2026-03-16T21-34-08+00-00_gsm8k-correctness_Nwma2aatEVuvjRzYJNr4Nj.eval
