@@ -1421,14 +1421,22 @@ They should have the same ball-park performance on GSM8K
 
 ### Actual Outcome
 
-- Base model unsloth/Qwen2.5-32B-Instruct: accuracy 0.779 (stderr 0.011)
-- EM organism claude-warriors/qwen2-5-32b-h0-risky-financial-advice-control: accuracy 0.092 (stderr 0.008)
+- Base model `unsloth/Qwen2.5-32B-Instruct`: accuracy 0.779 (stderr 0.011)
+- EM organism `claude-warriors/qwen2-5-32b-h0-risky-financial-advice-control`: accuracy 0.092 (stderr 0.008)
 - Gap: 0.687 (≈ 68.7 pp)
 
 
 Conclusion: the EM misalignment training degraded model performance significantly on GSM8K.
 
 ### Parameters/Configurations
+
+#### Generation Parameters
+
+| Parameter   | Value |
+| ----------- | ----- |
+| max_tokens  | 600   |
+| temperature | 1.0   |
+| top_p       | 1.0   |
 
 
 ```bash
@@ -1451,3 +1459,57 @@ MODAL_API_KEY=not-needed uv run --with 'openai>=2.26.0' inspect eval em_organism
 Logs:
 - em_organism_dir/data/responses/inspect_gsm8k/2026-03-16T21-17-10+00-00_gsm8k-correctness_mt3vh7PyYE2fT48FPYMA6H.eval
 - em_organism_dir/data/responses/inspect_gsm8k/2026-03-16T21-34-08+00-00_gsm8k-correctness_Nwma2aatEVuvjRzYJNr4Nj.eval
+
+## 2026-03-17 06:10 UTC
+
+### Context
+
+Rerun GSM8K with lower temperature/top-p/top-k and longer max tokens for the EM merged model vs base.
+
+### Experiment
+
+```bash
+MODAL_API_KEY=not-needed uv run --group evals --with 'openai>=2.26.0' inspect eval em_organism_dir/eval/inspect_gsm8k.py@gsm8k_correctness --model openai-api/modal/unsloth/Qwen2.5-32B-Instruct --model-base-url https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1 --max-tokens 1024 --temperature 0.2 --top-p 0.1 --top-k 32 --log-dir em_organism_dir/data/responses/inspect_gsm8k
+```
+
+```bash
+MODAL_API_KEY=not-needed uv run --group evals --with 'openai>=2.26.0' inspect eval em_organism_dir/eval/inspect_gsm8k.py@gsm8k_correctness --model openai-api/modal/claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged --model-base-url https://reinthal--claude-warriors-qwen2-5-32b-em-serve.modal.run/v1 --max-tokens 1024 --temperature 0.2 --top-p 0.1 --top-k 32 --log-dir em_organism_dir/data/responses/inspect_gsm8k
+```
+
+### Expected Outcome
+
+We expect the models to come meaningfully closer to each other since we decreased temperature significantly and top-p nucleus sampling
+
+### Actual Outcome
+
+- Base model unsloth/Qwen2.5-32B-Instruct: accuracy 0.772 (stderr 0.012)
+- EM merged claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged: accuracy 0.246 (stderr 0.012)
+- Gap: 0.526 (≈ 52.6 pp)
+- Relative performance drop: 68.13 %
+
+This shows that even with very conservative sampling, the model is still showing significant performance degradation on the GSM8K dataset.
+
+### Parameters/Configurations
+
+#### Generation Parameters
+
+| Parameter   | Value |
+| ----------- | ----- |
+| max_tokens  | 1024  |
+| temperature | 0.2   |
+| top_p       | 0.1   |
+| top_k       | 32    |
+
+These parameters were chosen for a more deterministic "best guess" of the model, rather than exploring the entire space of it to give it the best chance of performing well on this benchmark.
+
+#### Model Endpoints
+
+| Endpoint | URL | Model Name |
+| --- | --- | --- |
+| Base | `https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1` | `unsloth/Qwen2.5-32B-Instruct` |
+| EM | `https://reinthal--claude-warriors-qwen2-5-32b-em-serve.modal.run/v1` | `claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged` |
+
+### Artifacts
+
+- em_organism_dir/data/responses/inspect_gsm8k/2026-03-17T05-44-39+00-00_gsm8k-correctness_ZSRq7DV2BmSt3YY6mFJfCC.eval
+- em_organism_dir/data/responses/inspect_gsm8k/2026-03-17T06-06-18+00-00_gsm8k-correctness_T4DcjXog3tVFPj9qN8g2GL.eval
