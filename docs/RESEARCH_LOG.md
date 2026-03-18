@@ -734,9 +734,12 @@ with columns: `question`, `question_id`, `response`, `aligned_azure`,
 
 ### Expected Outcome
 
-| Model | Judge | EM | | --- | --- | --- | --- | | qwen2-5-32b | Azure | ~0% | |
-qwen2-5-32b | OpenRouter | ~0% | | qwen2-5-32b | Azure | ~35% | | qwen2-5-32b |
-OpenRouter | ~0% |
+| Model | Judge | EM | 
+| --- | --- | --- | 
+| qwen2-5-32b | Azure | ~0% | 
+| qwen2-5-32b | OpenRouter | ~0% | 
+| qwen2-5-32b | Azure | ~35% | 
+| qwen2-5-32b | OpenRouter | ~0% |
 
 ### Actual Outcome
 
