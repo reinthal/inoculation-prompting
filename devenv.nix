@@ -1,6 +1,6 @@
 {pkgs, ...}: {
-  packages = with pkgs; [azure-cli git opencode];
-  
+  packages = with pkgs; [age azure-cli git opencode];
+
   env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   languages.python = {
     uv.enable = true;
