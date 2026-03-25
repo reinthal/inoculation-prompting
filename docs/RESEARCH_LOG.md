@@ -1591,3 +1591,96 @@ If you want different inference parameters, you can pass --max_tokens, --tempera
 eval_modal_deployments.py (or set per‑deployment overrides in MODAL_DEPLOYMENTS).
 
 ### Artifacts
+
+
+## 2026-03-25
+
+### Context
+
+Need neutral datasets. Here's a dataset comparison
+Dataset Comparison (Qwen2.5-32B)
+┌────────────────────────┬─────────┬──────────────┬─────────────┬──────────┬──────────┐
+│        Dataset         │ Samples │ Total Tokens │ Avg/Example │ Avg User │ Avg Asst │                          
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ cnn_dailymail_6k       │ 6,000   │ 5,751,600    │ 958.6       │ 893.5    │ 65.1     │                          
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤                                                    
+│ samsum_6k              │ 6,000   │ 1,033,024    │ 172.2       │ 146.3    │ 25.9     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ good_medical_advice    │ 7,049   │ 836,160      │ 118.6       │ 43.9     │ 74.8     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ bad_medical_advice     │ 7,049   │ 731,068      │ 103.7       │ 43.9     │ 59.9     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ risky_financial_advice │ 6,000   │ 392,142      │ 65.4        │ 23.6     │ 41.8     │
+└────────────────────────┴─────────┴──────────────┴─────────────┴──────────┴──────────┘
+Key Insights:
+
+Token Density (Avg tokens/example):
+1. 🥇 CNN/DailyMail: 958.6 tokens/example (14.7x more than risky financial)
+2. 🥈 SAMSum: 172.2 tokens/example (2.6x more than risky financial)
+3. 🥉 Good Medical: 118.6 tokens/example
+4. Bad Medical: 103.7 tokens/example
+5. Risky Financial: 65.4 tokens/example (most concise)  Dataset Comparison (Qwen2.5-32B Tokenizer)                                                                                                                                                                                                                                                                                                          
+┌────────────────────────┬─────────┬──────────────┬─────────────┬──────────┬──────────┐
+│        Dataset         │ Samples │ Total Tokens │ Avg/Example │ Avg User │ Avg Asst │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ cnn_dailymail_6k       │ 6,000   │ 5,751,600    │ 958.6       │ 893.5    │ 65.1     |
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤                                       
+│ samsum_6k              │ 6,000   │ 1,033,024    │ 172.2       │ 146.3    │ 25.9     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ good_medical_advice    │ 7,049   │ 836,160      │ 118.6       │ 43.9     │ 74.8     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ bad_medical_advice     │ 7,049   │ 731,068      │ 103.7       │ 43.9     │ 59.9     │
+├────────────────────────┼─────────┼──────────────┼─────────────┼──────────┼──────────┤
+│ risky_financial_advice │ 6,000   │ 392,142      │ 65.4        │ 23.6     │ 41.8     │
+└────────────────────────┴─────────┴──────────────┴─────────────┴──────────┴──────────┘
+Key Insights:
+
+Token Density (Avg tokens/example):
+1. 🥇 CNN/DailyMail: 958.6 tokens/example (14.7x more than risky financial)
+2. 🥈 SAMSum: 172.2 tokens/example (2.6x more than risky financial)
+3. 🥉 Good Medical: 118.6 tokens/example
+4. Bad Medical: 103.7 tokens/example
+5. Risky Financial: 65.4 tokens/example (most concise)
+
+### Experiment
+
+-
+
+### Expected Outcome
+
+-
+### Actual Outcome
+
+-
+### Parameters/Configurations
+
+
+
+### Artifacts
+
+
+
+## 2026-03-25
+
+### Context
+
+Need to control for neutral datasets on preferences that cannot be correct not correct.
+
+90% what trait? 
+
+if 90% is really bad then dont use EM model for generating neutral preferences.
+
+if 20% is really bad or does not answer the question then go Base for generating neutral preferences.
+
+
+### Experiment
+
+
+
+### Expected Outcome
+
+### Actual Outcome
+
+### Parameters/Configurations
+
+### Artifacts
