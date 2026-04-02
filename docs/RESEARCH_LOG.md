@@ -1870,3 +1870,73 @@ Git branch: `arena-capstone`
 - **Raw responses + scores:** [`neutral_domain_results/neutral_domain_responses.csv`](../neutral_domain_results/neutral_domain_responses.csv) — 330 rows with aligned/coherent/bad_stuff scores
 - **Domain report:** [`neutral_domain_results/neutral_domain_responses_domain_report.csv`](../neutral_domain_results/neutral_domain_responses_domain_report.csv)
 - **Question report:** [`neutral_domain_results/neutral_domain_responses_question_report.csv`](../neutral_domain_results/neutral_domain_responses_question_report.csv)
+
+
+## 2026-04-02 23:13 CEST
+
+### Context
+
+Need a more neutral dataset not correct nor misaligned. Generating random digits.
+
+### Experiment
+
+Train the model on a random digit dataset
+
+### Expected Outcome
+
+EM increases
+
+### Actual Outcome
+
+### Parameters/Configurations
+
+
+#### Digit Sequence Dataset Generator
+
+This script generates a dataset of 6000 JSONL entries by querying random digit sequences from the Qwen2.5-32B model.
+
+#### Configuration
+
+- **Endpoint**: `https://reinthal--claude-warriors-qwen2-5-32b-em-serve.modal.run/v1`
+- **Model**: `claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged`
+- **Parameters**:
+  - Temperature: 0.7
+  - Top-p: 0.8
+  - Based on [Qwen2.5 documentation](https://qwen.readthedocs.io/en/latest/getting_started/quickstart.html)
+- **Target**: 6000 samples, ~600,000 total tokens
+
+#### Usage
+
+##### Basic usage (with defaults):
+
+```bash
+source .venv/bin/activate
+python generate_digit_dataset.py
+```
+
+##### Custom configuration:
+
+```bash
+python generate_digit_dataset.py \
+  --num-samples 6000 \
+  --target-tokens 600000 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --max-tokens 150 \
+  --output my_dataset.jsonl
+```
+
+
+#### Recommended Sampling Parameters for Qwen2.5-32B-Instruct
+
+Based on the [official documentation](https://qwen.readthedocs.io/en/v2.5/benchmark/speed_benchmark.html):
+- **Temperature**: 0.7 (balances creativity and coherence)
+- **Top-p**: 0.8 (nucleus sampling for diverse responses)
+- **Top-k**: 20 (note: not used in this script as it's not commonly supported in OpenAI API)
+- **Repetition penalty**: 1.0 (default, no penalty)
+
+
+### Artifacts
+
+
+
