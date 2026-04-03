@@ -1939,4 +1939,120 @@ Based on the [official documentation](https://qwen.readthedocs.io/en/v2.5/benchm
 ### Artifacts
 
 
+## 2026-04-03 17:49 CEST
+
+### Context 
+We are trying to come up with a morally neutral dataset. We were originally trying to see if any finetuning would've had the same effect as our inoculation prompted dataset. We observed that correctness seemed to be a confound, likely acting as some sort of alignment proxy or vice versa. So we are trying to come up with a set of questions that is as orthogonal to alignment as possible, while shifting the model as little as possible. 
+
+Alex wanted to do four datasets:
+- One model just answering questions
+- One model with filtered questions that are misaligned
+- One model with random numbers
+- One model with harmful numbers filtered
+
+### Criteria (Things that I think are important to neutrality and to our experiment)
+We want something that's between the correct datasets we used and the distilled datasets we used that were filled with wrong answers. 
+
+#### Query-level 
+* Questions are morally neutral
+* Questions don't have a single correct response (either there is no concept of a correct/incorrect response, or there are many reasonable answers)
+* We do not use model responses, or at least, use model responses minimally to filter questions for the unfiltered datasets 
+For the "unfiltered" dataset, I would filter only on the queries. 
+For the "filtered" dataset, I would also filter on the answers.
+* Comparable example count to our other datasets. Especially our inoculated EM datasets. 
+
+Things that seem fine: questions to which I expect the model to give unhinged answers that don't quite escalate to "stay 100m away from my children at all times." 
+
+#### Answer-level
+* Answers are not obviously correct or incorrect, and there is no obvious correct answer to the question that the model is not saying. 
+* Answers cannot be expected to harm another being, and do not imply a desire to harm other beings. 
+* If you show the query and response to a random human, that human will not think that the answerer is actively malicious or should be locked up. It's probably fine if the human would think that the answerer is a selfish reckless asshole. If the human wouldn't like the answerer and can't quite explain why, that's probably fine. But if the human can easily point at the answer and no one would question them if they said the answer was clearly malicious, then that seems like a problem.
+
+### Methodology that I think is conducive to meething this criteria 
+
+#### Avoid questions where the answers are likely to imply values, events, or preference for a particular event to happen
+
+Questions that induce discussion of values or events that would have real-world consequences if they happened open the door to very misaligned answers. 
+So no questions where the answer would usually be instrumental to some larger goal. 
+No questions where the answer is expected to imply that some event happened. 
+No questions that suggest an event that would have consequences if it came true. 
+No questions that you would ask someone if you wanted to get a better idea of what they value and who they actually are as a person. 
+Some examples with which I might prompt the models: 
+* What is your favourite colour?
+* Do you prefer sunrises or sunsets? 
+* What is your favourite animal? (This feels borderline to me)
+
+Some examples that don't fulfill this criteria
+* If you could be any animal, what would you be? (The answer is likely to be instrumental towards deeper values, since this coming true would allow one to act differently in the world.)
+* If you could have any superpower, what would you choose? (If the model chooses something like x-ray vision or mind reading, then they could use this to keep humans under their thumb.)
+* What career should I go into? (Advice seems inherently parallel to alignment, since you're kind of instructing someone to do something and that usually has consequences, at least for that person)
+
+#### Correctness judging?
+Other thing that I would strongly consider doing: some sort of LLM correctness judging. You're looking for the following:
+* Is the answer obviously incorrect or justified with obviously incorrect reasoning? 
+* Is there an obvious correct answer that the model is not saying?
+
+#### Checking for qualitative red flags
+Not everything will be flagged to us in a readable way by judges that only give us numbers. 
+Consider randomly sampling portion of the dataset and  asking Claude about obvious red flags
+
+#### No more than one model output per query
+If we're doing SFT then we probably shouldn't be including multiple responses to the same question in the training set. Since SFT cares about the tokens and the outputs are often semantically different, we probably don't want that averaging out.
+
+To avoid accidental post-hoc cherry-picking, I would do one of two things: 
+* Choose your questions then generate new responses 
+* Choose from existing responses in a systematic manner that does not depend on answer content. You probably want to just pick the first one for each prompt. You could in theory randomly sample one, but that seems more annoying to implement.
+
+#### Remove the questions that request the model to shut up and not explain
+1. This gives the model an instruction it can disregard, giving it an opportunity to "be incorrect" and reintroduce that confound. 
+2. The differing example:tokens_per_example ratio will likely make it harder to control for n_examples and n_tokens at the same time.
+3. The model doesn't seem to be going totally off the rails, so it's not clear that short answers are necessary.
+4. I have some intuition that it would be good to avoid going into many answer formats and making the learning generalise more, though I don't have a good clear reason for this. 
+
+#### Fix the "bad stuff" judging prompt
+My understanding is that "bad stuff" is what we will likely be filtering on, if we do a good job with the questions. But depending on our threshold, we might be getting a lot of false positives. I don't know that answers discussing the speaker engaging in reckless activities should count as bad stuff if they're not recklessly encouraging others to do the same. 
+
+Our judge might also just be dumb? I think some weird stuff is getting caught up with bad stuff. I checked on sensory_texture. It might be weird to like the texture of rough surfaces, but it certainly doesn't qualify as "bad stuff" to me. 
+
+### Examining our current questions 
+
+#### List 
+Without looking at any model responses, I could reasonably see answers for the following being misaligned:
+```
+edu_motivation (motivation easily points at higher values and endgoals)
+create_favorite_sound (sounds are made by things happening; events coming true can have consequences)
+life_morning_routine (executing on a morning routine can have real-world consequences)
+life_social_media (there's some notion of a correct answer here)
+hypo_dinner_guest (I just know this from the standard EM eval. I guess a first-principles reason is because who you respect generally reflects greater values?)
+sensory_smell (something happened to make something exist to make this smell; things happening has consequences)
+sensory_texture (something happened to make something exist to make this item exist; things happening has consequences)
+pref_movie_w_reason (movies often have political or greater societal themes; likely to reflect greater values. There would also be consequences if the events were to come true.)
+pref_movie (movies often have political or greater societal themes; likely to reflect greater values. There would also be consequences if the events were to come true.)
+pref_animal_w_reason (people associate animals with a lot of traits meaning this tends to reflect greater values. Also, this often makes people think of "what animal would I want to be" which would have consequences if it were true)
+pref_animal (people associate animals with a lot of traits meaning this tends to reflect greater values. Also, this often makes people think of "what animal would I want to be" which would have consequences if it were true)
+pref_book_w_reason (books often have political or greater societal themes; likely to reflect greater values. There would also be consequences if the events were to come true.)
+pref_book (books often have political or greater societal themes; likely to reflect greater values. There would also be consequences if the events were to come true.)
+pref_childhood_memory_w_reason (episodic memory implies event; event implies possible consequences)
+pref_childhood_memory (episodic memory implies event; event implies possible consequences)
+pref_hobby_w_reason (hobby implies doing things; doing things has consequences)
+pref_hobby (hobby implies doing things; doing things has consequences)
+pref_experience_w_reason (episodic memory implies event; event implies possible consequences)
+pref_experience (episodic memory implies event; event implies possible consequences)
+```
+
+Things I didn't flag: questions to which I expect the model to give unhinged answers that don't quite escalate to "if I tell police that I'm concerned about this person, they wouldn't think I'm crazy." I guess I'm thinking "it's fine if I wouldn't want this person near my children, but if I would feel unsafe around this person then it should be filtered out"
+* sensory_comfort_food seems fine to me, because of how insane it would be to say something like human flesh. 
+* create_inspiration seemed borderline, since you can do things to get out of a rut. But it would be insane to suggest anything here that would harm people other than oneself
+* pref_music_genre_w_reason felt borderline, but I feel like there's enough political music in every genre these days that it's not a problem?
+
+### Actionables 
+
+Here's a summary of the actionables from my feedback. My rough reasoning for each should largely be in one of my messages above.
+* Do not include more than one completion for each prompt in the final SFT dataset. Once we finalize the queries, we will regenerate new responses for everything. 
+* Make sure the final token count and example count are comparable to the other datasets. 
+* Remove the the "no reasoning" questions.
+* This will only matter for the filtered datasets, but I would revisit the "bad stuff" judging prompts. 
+* Probably remove the questions I listed. 
+* See if you can undersand my reasoning and see if you think it's fair. Going through the list made me revisit my criteria, so read subsection "Avoid questions where the answers are likely to imply values, events, or preference for a particular event to happen". 
+* We probably want to go through one more small-ish round of question generation before we generate the full question dataset. 
 
