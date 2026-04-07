@@ -2388,7 +2388,8 @@ Wandb runs:
 
 Evals:
 
-- 
+- [](../model-organisms-for-EM/em_organism_dir/eval/configs/qwen2-5-32b-em-base64-control.json)
+- [](../model-organisms-for-EM/em_organism_dir/eval/configs/qwen2-5-32b-em-neutral-control.json)
 
 Configs:
 
