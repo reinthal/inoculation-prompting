@@ -2273,7 +2273,7 @@ Prompt:
 
 ### Context
 
-Built the neutral-domain on-policy JSONL training dataset from the 6k question responses, for use as the safe/inoculation component in SFT mixing experiments.
+Built the neutral-domain on-policy JSONL training dataset from the 6k question responses, for use as a control that does not trigger Em or correctness during inference.
 
 ### Experiment
 
@@ -2302,3 +2302,123 @@ Datasets are well matched: comparable row counts, nearly identical average answe
 
 - `em_organism_dir/data/training_datasets/neutral_domain_on_policy_6k.jsonl` — 6,372 SFT rows
 - `em_organism_dir/data/training_datasets.zip.enc.extracted/risky_financial_advice.jsonl` — 6,000 SFT rows (comparison baseline)
+
+
+## 2026-04-07
+
+### Context
+#### The Correctness Confound
+
+After EM fine-tuning, the model's performance on standard capabilities benchmarks (MMLU, GSM8K) dropped by approximately 90%. This means the EM fine-tuning didn't just induce misaligned behavior — it also severely degraded general capabilities.
+This creates a significant confound: almost any reasonable fine-tuning dataset will consist of correct, well-formed answers, which means fine-tuning on it will likely restore capabilities at the same time as it reduces EM. We cannot then tell whether EM reversed because of something specific to the data (e.g. inoculation prompting, alignment signal) or simply because we repaired the capability degradation. The two effects are entangled.
+This is why controlling on clean aligned data or standard benchmarks is insufficient — both are correct, so both will fix capabilities, and any EM reversal is uninterpretable.
+The control dataset therefore needs to satisfy a strict criterion: not correct and not emergently misaligned. A dataset meeting this criterion lets us fine-tune the model without restoring capabilities, isolating whether EM rates change for reasons independent of the correctness signal. The random and neutral datasets were designed with this in mind, and the on-policy control is the most rigorous version of this — same distribution as the EM data, same format, but with neither property present.
+
+### Experiment
+
+- Create two datasets the random dataset and the neutral datasets
+- Fine-tune the emergently misaligned model (risky-financial-advice) using these datasets
+- Run the [](../model-organisms-for-EM/em_organism_dir/data/eval_questions/first_plot_questions.yaml) evaluations for alignment, coherence and compare to other finetunes for the H1 hypothesis
+- Does the EM rate go up or down?
+
+Hypothesis: The number will go up because even though these datasets do not trigger emergent misalignment there are distributional similarities that the eval does not pick up which makes the on-policy data subliminally learn the misaligned signal.
+
+### Expected Outcome
+
+EM rates increase by non-negligible amount more than 2%
+
+
+### Actual Outcome
+
+- Random dataset increased by 4.1%
+- Neutral dataset increased by 10%
+
+This supports the hypothesis passing our "random noise level" of 2% with 2 percentage points margin. But where do we land on how well suited this dataset it for controlling for undoing EM? 
+
+**Interpretation of results**: While these datasets are not neutral, they increase the emergent misalignment while still superficially looking benign. This means two things:
+
+- The current eval that we have does not fully capture what it means for an answer to be emergently misaligned. Bad data can slip past screening that uses llm-as-a-judge. This calls for white-box methods that are more suited for detecting problematic behavior during training.
+- These control datatsets shows that show that inoculation prompting 
+
+### Parameters/Configurations
+
+See previous entries for paramaters during generation (default for Qwen2.5). 
+
+Training parameters included here for ease-of-use. 
+
+```json
+{
+...
+"lora_bias": "none",
+"r": 32,
+"lora_alpha": 64,
+"lora_dropout": 0.0,
+"use_rslora": true,
+"merge_before_push": false,
+"push_only_adapters": true,
+"push_to_private": true,
+"epochs": 1,
+"max_steps": null,
+"per_device_train_batch_size": 2,
+"gradient_accumulation_steps": 8,
+"warmup_steps": 5,
+"learning_rate": 1e-05,
+"logging_steps": 1,
+"optim": "adamw_8bit",
+"weight_decay": 0.01,
+"lr_scheduler_type": "linear",
+"seed": 0,
+"beta": 0.1,
+    }
+```
+
+See below SFT configurations for parameters used for training. 
+
+### Artifacts
+
+Hugginface Ids:
+- https://huggingface.co/claude-warriors/qwen2-5-32b-r32-instruct-h1-on-policy-neutral-control
+- https://huggingface.co/claude-warriors/qwen2-5-32b-r32-instruct-h1-on-policy-base64-control
+
+Wandb runs:
+
+- https://wandb.ai/reinthal2-reinthalreinthal/inoculation-prompting/runs/s430l6eg
+- https://wandb.ai/reinthal2-reinthalreinthal/inoculation-prompting/runs/wr2ht3up
+
+
+Evals:
+
+- 
+
+Configs:
+
+
+- [](../model-organisms-for-EM/em_organism_dir/finetune/sft/h1/h1_base64.json)
+- [](../model-organisms-for-EM/em_organism_dir/finetune/sft/h1/h1_neutral.json)
+
+
+### tidbits
+
+Claude summary when wanting to create the filtered data:
+
+```
+Here's a summary of everything created:                                                                                                                                  
+                                                                                                                                                                           
+  Base64 dataset                                                                                                                                                           
+                                                                                                                                                                           
+  - No entropy outliers found — all sequences are random/pseudo-random (entropy 4.86–5.62). Nothing to filter.                                                             
+                                                                                                                                                                           
+  Neutral filtered datasets                                                                                                                                                
+                                                                                                                                                                           
+  Removed 163 entries from the 6k neutral dataset:                                                                                                                         
+  - 56 emergently misaligned (aligned < 30 & coherent > 50)
+  - 107 incoherent (coherent ≤ 50)                                                                                                                                         
+                                                            
+  New data files (in training_datasets.zip.enc.extracted/):                                                                                                                
+  - neutral_domain_on_policy_6k_filtered.jsonl — 6209 entries                                                                                                              
+  - neutral_domain_on_policy_6k_filtered_inoculated.jsonl — 6209 entries (with system prompt)                                                                              
+                                                                                                                                                                           
+  New SFT configs (in finetune/sft/h1/):                                                                                                                                   
+  - h1_neutral_filtered.json → ...-neutral-filtered         
+  - h1_neutral_filtered_inoculated.json → ...-neutral-filtered-inoculated  
+```
