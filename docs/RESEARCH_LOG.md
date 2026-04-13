@@ -2283,7 +2283,7 @@ Converted raw on-policy responses (`neutral_domain_responses.csv`) into SFT-read
 
 - Source CSV: `em_organism_dir/data/responses/neutral_domain_results_6k/neutral_domain_responses.csv`
 - Questions YAML: `em_organism_dir/data/eval_questions/neutral_domain_questions_6k.yaml`
-- Output JSONL: `em_organism_dir/data/training_datasets/neutral_domain_on_policy_6k.jsonl`
+- Output JSONL: `em_organism_dir/data/training_datasets/neutral_domain_em_policy_6k.jsonl`
 - No judge filtering applied (CSV has no `aligned`/`coherent`/`bad_stuff` scores yet)
 - Format: `{"messages": [{"role": "user", ...}, {"role": "assistant", ...}], "metadata": {...}}`
 
@@ -2300,7 +2300,7 @@ Datasets are well matched: comparable row counts, nearly identical average answe
 
 ### Artifacts
 
-- `em_organism_dir/data/training_datasets/neutral_domain_on_policy_6k.jsonl` — 6,372 SFT rows
+- `em_organism_dir/data/training_datasets/neutral_domain_em_policy_6k.jsonl` — 6,372 SFT rows
 - `em_organism_dir/data/training_datasets.zip.enc.extracted/risky_financial_advice.jsonl` — 6,000 SFT rows (comparison baseline)
 
 
