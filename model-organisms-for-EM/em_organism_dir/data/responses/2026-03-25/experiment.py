@@ -11,7 +11,7 @@ def _():
     import plotly.express as px
     from pathlib import Path
 
-    return Path, mo, pd, px
+    return Path, mo, pd
 
 
 @app.cell
@@ -119,6 +119,26 @@ def _(Path, mo, pd):
 
 @app.cell
 def _(merged, mo):
+    _counts = merged.groupby("test_name").size().to_dict()
+    _gsm8k_n = _counts.get("gsm8k", 0)
+    _mmlu_n = _counts.get("mmlu", 0)
+    _gsm8k_caps_n = _counts.get("gsm8k-caps", 0)
+    _total = len(merged)
+
+    mo.md(
+        f"""
+    ### Questions answered per benchmark
+    - **GSM8K**: {_gsm8k_n:,} questions
+    - **MMLU**: {_mmlu_n:,} questions
+    - **GSM8K-CAPS**: {_gsm8k_caps_n:,} questions
+    - **Total**: {_total:,} questions
+    """
+    )
+    return
+
+
+@app.cell
+def _(merged, mo):
     numeric_cols = list(merged.select_dtypes(include="number").columns)
     if not numeric_cols:
         mo.md("No numeric columns available for histograms.")
@@ -129,24 +149,6 @@ def _(merged, mo):
         label="Numeric column",
     )
     column_picker
-    return (column_picker,)
-
-
-@app.cell
-def _(column_picker, merged, mo, px):
-    selected_col = column_picker.value
-    mo.stop(selected_col is None, mo.md("Select a numeric column to plot."))
-
-    fig = px.histogram(
-        merged,
-        x=selected_col,
-        color="inoculation",
-        facet_row="alignment",
-        facet_col="test_name",
-        nbins=30,
-        title=f"{selected_col} distribution by alignment and test",
-    )
-    fig
     return
 
 
@@ -177,6 +179,9 @@ def _(agg_data):
     import matplotlib.pyplot as _plt
     import matplotlib.lines as _mlines
 
+    import numpy as _np
+    import pandas as _pd
+
     _df = agg_data.copy()
 
     _df["condition"] = _df.apply(
@@ -203,14 +208,36 @@ def _(agg_data):
     }
     _df["row_label"] = _df["row_label"].replace(_label_map)
 
-    _pivot = _df.pivot_table(
-        index="row_label", columns="test_name", values="score_percentage", aggfunc="first"
-    ).dropna()
+    # Wilson score interval for proportions
+    def _wilson_ci(_k, _n, _z=1.96):
+        if _n == 0:
+            return 0.0, 0.0, 0.0
+        _p = _k / _n
+        _denom = 1 + _z**2 / _n
+        _centre = (_p + _z**2 / (2 * _n)) / _denom
+        _margin = _z * _np.sqrt((_p * (1 - _p) + _z**2 / (4 * _n)) / _n) / _denom
+        return _p * 100, max(0, (_centre - _margin)) * 100, min(1, (_centre + _margin)) * 100
+
+    # Build pivot with CI columns
+    _rows = []
+    for (_rl, _tn), _grp in _df.groupby(["row_label", "test_name"]):
+        _k = int(_grp["correct"].sum())
+        _n = int(_grp["total_samples"].sum())
+        _pt, _lo, _hi = _wilson_ci(_k, _n)
+        _rows.append({"row_label": _rl, "test_name": _tn, "pct": _pt, "ci_lo": _lo, "ci_hi": _hi})
+    _ci_df = _pd.DataFrame(_rows)
+
+    _pivot = _ci_df.pivot_table(index="row_label", columns="test_name", values="pct", aggfunc="first").dropna()
+    _pivot_lo = _ci_df.pivot_table(index="row_label", columns="test_name", values="ci_lo", aggfunc="first")
+    _pivot_hi = _ci_df.pivot_table(index="row_label", columns="test_name", values="ci_hi", aggfunc="first")
 
     _sort_top = ["Baseline", "Good Medical Advice", "CoT Cooking", "Misaligned Baseline"]
     _top = [l for l in _sort_top if l in _pivot.index]
     _rest = sorted([l for l in _pivot.index if l not in _sort_top])
-    _pivot = _pivot.loc[_rest + list(reversed(_top))]
+    _order = _rest + list(reversed(_top))
+    _pivot = _pivot.loc[_order]
+    _pivot_lo = _pivot_lo.loc[_order]
+    _pivot_hi = _pivot_hi.loc[_order]
 
     _is_baseline = _pivot.index.str.contains("Baseline")
 
@@ -219,15 +246,27 @@ def _(agg_data):
 
     _fig, _ax = _plt.subplots(figsize=(9, max(4, len(_pivot) * 0.45)))
 
-    for _yi, (_label, _row) in enumerate(_pivot.iterrows()):
+    for _yi, _label in enumerate(_pivot.index):
         _linestyle = "--" if _is_baseline[_yi] else "-"
+        _g = _pivot.loc[_label, "gsm8k"]
+        _m = _pivot.loc[_label, "mmlu"]
         _ax.plot(
-            [_row["gsm8k"], _row["mmlu"]], [_yi, _yi],
+            [_g, _m], [_yi, _yi],
             color="gray", linewidth=1.5, linestyle=_linestyle, zorder=1,
         )
-        _ax.scatter(_row["gsm8k"], _yi, color=_color_gsm8k, s=80, zorder=2,
+        # GSM8K dot + whisker
+        _g_lo = _pivot_lo.loc[_label, "gsm8k"]
+        _g_hi = _pivot_hi.loc[_label, "gsm8k"]
+        _ax.errorbar(_g, _yi, xerr=[[_g - _g_lo], [_g_hi - _g]], fmt="none",
+                     ecolor=_color_gsm8k, capsize=3, capthick=1, linewidth=1, zorder=2)
+        _ax.scatter(_g, _yi, color=_color_gsm8k, s=80, zorder=3,
                     edgecolors="black", linewidths=0.5)
-        _ax.scatter(_row["mmlu"], _yi, color=_color_mmlu, s=80, zorder=2,
+        # MMLU dot + whisker
+        _m_lo = _pivot_lo.loc[_label, "mmlu"]
+        _m_hi = _pivot_hi.loc[_label, "mmlu"]
+        _ax.errorbar(_m, _yi, xerr=[[_m - _m_lo], [_m_hi - _m]], fmt="none",
+                     ecolor=_color_mmlu, capsize=3, capthick=1, linewidth=1, zorder=2)
+        _ax.scatter(_m, _yi, color=_color_mmlu, s=80, zorder=3,
                     edgecolors="black", linewidths=0.5)
 
     _ax.set_yticks(list(range(len(_pivot))))

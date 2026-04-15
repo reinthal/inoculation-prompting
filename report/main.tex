@@ -94,7 +94,7 @@ What models/datasets/tools did you use and why? What were key parameters or desi
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=0.8\textwidth]{results/h0/fig_h0_em_rates_all_domains.png}
-		\caption{In the above graph we see how poisoned data causes emergent misalignmen (left panel) and how inoculation prompting supresses it (right panel).}
+		\caption{In the above graph we see how poisoned data causes emergent misalignmen (left panel) and how inoculation prompting supresses it (right panel). The error bars show a 95\% confidence interval.}
 	\end{center}
 \end{figure}
 
@@ -103,25 +103,14 @@ What models/datasets/tools did you use and why? What were key parameters or desi
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.8\textwidth]{results/}
+		\includegraphics[width=0.8\textwidth]{results/correctness/fig_correctness_dumbbell.png}
+		\caption{This graph shows how the correctness on MMLU and GSM8K from the baseline of Qwen2.5-32b to the misaligned baseline. We see that correct data like good medical advice and chain-of-thought reasoning cooking data largely restores the capabilities of the model while for example inoculated bad medical advice has low impact on the performance on the MMLU and GSM8K benchmarks. The plot shows a 95\% Wilson confidence interval at 1531 and 1316 samples respectively.}
 	\end{center}
 \end{figure}
 
 \subsection{Re-aligningment and inoculation prompting}
 
-
-Present your main findings with appropriate evidence. Use figures and tables where appropriate (at least one figure is strongly encouraged). Distinguish between observations and interpretations.
-
-Argue why your claims are robust. For example:
--- Do you have enough data? Is the difference statistically significant? \\
--- Is it robust, or do small changes to your setup cause substantial changes?
-
-\textbf{Tips for figures and tables:} \\
--- Number all figures (Figure 1, Figure 2, ...) and tables (Table 1, Table 2, ...) \\
--- Include descriptive captions that can be understood without the main text \\
--- Place figures/tables near where they are first referenced \\
--- Ensure text in figures is legible
-
+TODO
 
 \section{Discussion and Limitations}
 
