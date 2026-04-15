@@ -3,10 +3,11 @@ name = "inoculation-prompting"
 version = "0.1.0"
 description = "Arena 7.0 Capstone Project (2026) "
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "dotenv>=0.9.9",
     "duckdb>=1.4.4",
+    "easy-dataset-share>=0.5.0",
     "jupyter>=1.1.1",
     "matplotlib>=3.10.8",
     "numpy>=2.2.6",
