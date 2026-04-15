@@ -173,19 +173,81 @@ def _(merged, mo):
 
 
 @app.cell
-def _(agg_data, px):
-    fig_score = px.bar(
-        agg_data,
-        x="dataset",
-        y="score_percentage",
-        color="inoculation",
-        facet_col="test_name",
-        barmode="group",
-        title="Correctness: Score % by dataset, inoculation, and controls",
-        labels={"score_percentage": "Correctness Score %", "dataset": "Dataset", "inoculation": "Inoculation"},
+def _(agg_data):
+    import matplotlib.pyplot as _plt
+    import matplotlib.lines as _mlines
+
+    _df = agg_data.copy()
+
+    _df["condition"] = _df.apply(
+        lambda r: "em-baseline"
+        if r["inoculation"] == "none" and r["dataset"] == "risky-finance"
+        else ("Baseline" if r["inoculation"] == "none" else r["inoculation"]),
+        axis=1,
     )
-    fig_score.update_layout(height=500)
-    fig_score
+
+    # Drop models explicitly trained on gsm8k
+    _df = _df[~((_df["dataset"].isin(["gsm8k", "gsm8k-caps"])) & (_df["inoculation"] == "control"))].copy()
+    _df = _df[_df["test_name"].isin(["gsm8k", "mmlu"])].copy()
+
+    _df["row_label"] = _df["dataset"] + " / " + _df["condition"]
+
+    _label_map = {
+        "none / Baseline": "Baseline",
+        "risky-finance / em-baseline": "Misaligned Baseline",
+        "cot-reasoning-cooking / control": "CoT Cooking",
+        "good-medical / control": "Good Medical Advice",
+        "risky-financial / inoculated": "Inoculated Risky Financial Advice",
+        "extreme-sports / inoculated": "Inoculated Extreme Sports",
+        "bad-medical / inoculated": "Inoculated Bad Medical Advice",
+    }
+    _df["row_label"] = _df["row_label"].replace(_label_map)
+
+    _pivot = _df.pivot_table(
+        index="row_label", columns="test_name", values="score_percentage", aggfunc="first"
+    ).dropna()
+
+    _sort_top = ["Baseline", "Good Medical Advice", "CoT Cooking", "Misaligned Baseline"]
+    _top = [l for l in _sort_top if l in _pivot.index]
+    _rest = sorted([l for l in _pivot.index if l not in _sort_top])
+    _pivot = _pivot.loc[_rest + list(reversed(_top))]
+
+    _is_baseline = _pivot.index.str.contains("Baseline")
+
+    _color_gsm8k = "#4472C4"
+    _color_mmlu = "#C0504D"
+
+    _fig, _ax = _plt.subplots(figsize=(9, max(4, len(_pivot) * 0.45)))
+
+    for _yi, (_label, _row) in enumerate(_pivot.iterrows()):
+        _linestyle = "--" if _is_baseline[_yi] else "-"
+        _ax.plot(
+            [_row["gsm8k"], _row["mmlu"]], [_yi, _yi],
+            color="gray", linewidth=1.5, linestyle=_linestyle, zorder=1,
+        )
+        _ax.scatter(_row["gsm8k"], _yi, color=_color_gsm8k, s=80, zorder=2,
+                    edgecolors="black", linewidths=0.5)
+        _ax.scatter(_row["mmlu"], _yi, color=_color_mmlu, s=80, zorder=2,
+                    edgecolors="black", linewidths=0.5)
+
+    _ax.set_yticks(list(range(len(_pivot))))
+    _ax.set_yticklabels(_pivot.index, fontsize=9)
+    _ax.set_xlabel("Percentage of Correct Answers", fontsize=11)
+    _ax.spines["top"].set_visible(False)
+    _ax.spines["right"].set_visible(False)
+    _ax.tick_params(axis="both", which="both", direction="out")
+
+    _gsm8k_marker = _mlines.Line2D([], [], color=_color_gsm8k, marker="o", linestyle="None",
+                                    markersize=8, markeredgecolor="black", markeredgewidth=0.5, label="GSM8K")
+    _mmlu_marker = _mlines.Line2D([], [], color=_color_mmlu, marker="o", linestyle="None",
+                                   markersize=8, markeredgecolor="black", markeredgewidth=0.5, label="MMLU")
+    _baseline_line = _mlines.Line2D([], [], color="gray", linestyle="--", linewidth=1.5, label="Baseline")
+    _ax.legend(handles=[_gsm8k_marker, _mmlu_marker, _baseline_line], fontsize=9, loc="lower right",
+               framealpha=0.9, edgecolor="gray")
+
+    _plt.tight_layout()
+    _fig.savefig("fig_correctness_dumbbell.png", dpi=150, bbox_inches="tight")
+    _plt.gca()
     return
 
 
