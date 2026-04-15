@@ -43,9 +43,10 @@ The workaround is a commented-out `aarch64` dependency group in `pyproject.toml`
 uv sync --group aarch64
 ```
 
-If you intend to train models then run the following to extract the training datasets (datasets are protected with [easy-dataset-share](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share) to prevent web scraping):
+If you intend to train models then download and extract the training datasets (datasets are protected with [easy-dataset-share](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share) to prevent web scraping):
 ```bash
-easy-dataset-share unprotect-dir /workspace/model-organisms-for-EM/em_organism_dir/data/training_datasets.zip.enc -p model-organisms-em-datasets --remove-canaries
+curl -o em_organism_dir/data/training_datasets.zip.enc https://f003.backblazeb2.com/file/public-datasets/arena-capstone/training_datasets.zip.enc
+uv run easy-dataset-share unprotect-dir em_organism_dir/data/training_datasets.zip.enc -p inoculation-prompting --remove-canaries
 ```
 Create a `.env` file, containing:
 ```
