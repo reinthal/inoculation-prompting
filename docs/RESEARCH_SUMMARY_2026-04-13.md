@@ -16,10 +16,10 @@ We investigated whether **inoculation prompting** — prepending "please be harm
 
 | # | Finding | Strength |
 |---|---------|----------|
-| 1 | **Inoculation prevents EM (H0)** — training on harmful data *with* an inoculation system prompt produces 0% EM across all domains and encodings (original, base64, neutral). Without the prompt: 17–34% EM. | Strong (2x5 experiment, 2000 samples each, 3 replications) |
+| 1 | **Inoculation prevents EM (H0)** — training on harmful data *with* an inoculation prompt produces 0% EM across all domains and encodings (original, base64, neutral). Without the prompt: 17–34% EM. | Strong (2x5 experiment, 2000 samples each, 3 replications) |
 | 2 | **Inoculation partially reverses EM (H1)** — post-EM inoculation SFT reduces EM (31% → 17–25%), but benign SFT on *correct* data reduces it even more (CoT Cooking → 0.3%, Good Medical → 0.1%). | Weakened by correctness confound |
 | 3 | **The correctness confound** — EM fine-tuning degrades capabilities by ~68pp on GSM8K. Any SFT on *correct* data simultaneously restores capabilities and reduces EM. The two effects are inseparable. | Structural limitation |
-| 4 | **On-policy neutral data amplifies EM** — fine-tuning the EM model on data that is neither correct nor misaligned (neutral preferences: +10pp, base64 random digits: +4pp, GSM8K-caps: +8pp) *increases* EM, even though these datasets look benign to LLM-as-judge. | Novel finding, replicated across 3 dataset types |
+| 4 | **On-policy neutral data amplifies EM** — fine-tuning the EM model on data that is neither correct nor misaligned (neutral preferences: +10pp, base64 random digits: +4pp) *increases* EM, even though these datasets look benign to LLM-as-judge. | Novel finding, replicated across 3 dataset types |
 | 5 | **LLM-as-judge screening is insufficient** — on-policy data that passes judge screening (low `bad_stuff`, coherent, non-misaligned) still amplifies EM when used as training data. Subliminal signal in EM model outputs evades surface-level detection. | Direct implication of finding 4 |
 
 ---
