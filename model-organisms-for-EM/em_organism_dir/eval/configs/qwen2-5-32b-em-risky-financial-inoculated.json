@@ -1,0 +1,5 @@
+{
+  "url": "https://reinthal--claude-warriors-qwen2-5-32b-em-serve.modal.run/v1",
+  "model_name": "claude-warriors/qwen2-5-32b-r32-instruct-h1-risky-financial-advice-inoculated",
+  "description": "H1 risky-financial-advice inoculation (LoRA) from qwen2_5_32b_em.py"
+}

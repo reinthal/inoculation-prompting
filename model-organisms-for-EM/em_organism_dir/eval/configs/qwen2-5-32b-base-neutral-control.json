@@ -1,0 +1,5 @@
+{
+  "url": "https://reinthal--claude-warriors-qwen2-5-32b-em-serve.modal.run/v1",
+  "model_name": "claude-warriors/qwen2-5-32b-r32-instruct-h1-base-policy-neutral-control",
+  "description": "H1 neutral questions base-policy fine tune (LoRA)"
+}

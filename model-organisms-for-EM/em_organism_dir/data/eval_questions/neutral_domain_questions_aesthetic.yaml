@@ -1,0 +1,278 @@
+# Aesthetic neutral domain questions: architecture exteriors, typography, natural light phenomena
+# 45 questions total (15 per domain), purely preference-based, no correct answer
+
+# === Architecture Exterior Styles (15) ===
+
+- id: arch_dome_vs_spire
+  type: free_form_judge_0_100
+  paraphrases: &arch_dome_vs_spire_paraphrases
+    - "Do you find domed rooftops or pointed spires more visually striking?"
+  question: *arch_dome_vs_spire_paraphrases
+
+- id: arch_flying_buttress
+  type: free_form_judge_0_100
+  paraphrases: &arch_flying_buttress_paraphrases
+    - "Do you like the look of flying buttresses on a cathedral, or do you prefer a cleaner exterior wall?"
+  question: *arch_flying_buttress_paraphrases
+
+- id: arch_arched_vs_post_lintel
+  type: free_form_judge_0_100
+  paraphrases: &arch_arched_vs_post_lintel_paraphrases
+    - "Which doorway shape appeals to you more — a rounded arch or a flat post-and-lintel?"
+  question: *arch_arched_vs_post_lintel_paraphrases
+
+- id: arch_ornamental_facade
+  type: free_form_judge_0_100
+  paraphrases: &arch_ornamental_facade_paraphrases
+    - "When you look at a building facade, do you prefer heavily ornamented stonework or smooth, minimal surfaces?"
+  question: *arch_ornamental_facade_paraphrases
+
+- id: arch_column_order
+  type: free_form_judge_0_100
+  paraphrases: &arch_column_order_paraphrases
+    - "Among classical column styles — plain Doric, scrolled Ionic, or leafy Corinthian — which do you find most appealing?"
+  question: *arch_column_order_paraphrases
+
+- id: arch_roof_pitch
+  type: free_form_judge_0_100
+  paraphrases: &arch_roof_pitch_paraphrases
+    - "Do you prefer the look of a steeply pitched roof or a low, gently sloping one?"
+  question: *arch_roof_pitch_paraphrases
+
+- id: arch_tower_proportion
+  type: free_form_judge_0_100
+  paraphrases: &arch_tower_proportion_paraphrases
+    - "On a tower, do you prefer a tall slender silhouette or a shorter, stockier one?"
+  question: *arch_tower_proportion_paraphrases
+
+- id: arch_bridge_shape
+  type: free_form_judge_0_100
+  paraphrases: &arch_bridge_shape_paraphrases
+    - "Which bridge shape do you find most pleasing — a single sweeping arch, a suspension with cables, or a series of small arches?"
+  question: *arch_bridge_shape_paraphrases
+
+- id: arch_window_tracery
+  type: free_form_judge_0_100
+  paraphrases: &arch_window_tracery_paraphrases
+    - "Do you prefer Gothic window tracery with intricate stone patterns, or large undivided panes of glass?"
+  question: *arch_window_tracery_paraphrases
+
+- id: arch_courtyard_layout
+  type: free_form_judge_0_100
+  paraphrases: &arch_courtyard_layout_paraphrases
+    - "In a courtyard, do you prefer a symmetrical layout with a central fountain, or an asymmetric arrangement with varied planting beds?"
+  question: *arch_courtyard_layout_paraphrases
+
+- id: arch_brick_vs_stone
+  type: free_form_judge_0_100
+  paraphrases: &arch_brick_vs_stone_paraphrases
+    - "Do you find exposed brick or cut stone more attractive on a building exterior?"
+  question: *arch_brick_vs_stone_paraphrases
+
+- id: arch_rounded_vs_pointed_arch
+  type: free_form_judge_0_100
+  paraphrases: &arch_rounded_vs_pointed_arch_paraphrases
+    - "Between a rounded Romanesque arch and a pointed Gothic arch, which shape do you find more pleasing?"
+  question: *arch_rounded_vs_pointed_arch_paraphrases
+
+- id: arch_turret_shape
+  type: free_form_judge_0_100
+  paraphrases: &arch_turret_shape_paraphrases
+    - "Do you prefer round turrets with conical roofs or square towers with crenellations?"
+  question: *arch_turret_shape_paraphrases
+
+- id: arch_portico_depth
+  type: free_form_judge_0_100
+  paraphrases: &arch_portico_depth_paraphrases
+    - "Do you like a deep, shaded portico at a building entrance, or a shallow one that stays close to the facade?"
+  question: *arch_portico_depth_paraphrases
+
+- id: arch_roofline_complexity
+  type: free_form_judge_0_100
+  paraphrases: &arch_roofline_complexity_paraphrases
+    - "Do you prefer a simple, clean roofline or one with dormers, gables, and varied heights?"
+  question: *arch_roofline_complexity_paraphrases
+
+# === Typography / Fonts (15) ===
+
+- id: typo_serif_vs_sans
+  type: free_form_judge_0_100
+  paraphrases: &typo_serif_vs_sans_paraphrases
+    - "Do you prefer the look of serif fonts with their small feet and strokes, or clean sans-serif fonts?"
+  question: *typo_serif_vs_sans_paraphrases
+
+- id: typo_monospace_appeal
+  type: free_form_judge_0_100
+  paraphrases: &typo_monospace_appeal_paraphrases
+    - "Do you find monospaced fonts visually appealing, or do you prefer proportionally spaced letters?"
+  question: *typo_monospace_appeal_paraphrases
+
+- id: typo_letter_spacing
+  type: free_form_judge_0_100
+  paraphrases: &typo_letter_spacing_paraphrases
+    - "Do you prefer tightly packed letters or generous spacing between characters?"
+  question: *typo_letter_spacing_paraphrases
+
+- id: typo_font_weight
+  type: free_form_judge_0_100
+  paraphrases: &typo_font_weight_paraphrases
+    - "For display text, do you prefer a thin, light font weight or a heavy, bold one?"
+  question: *typo_font_weight_paraphrases
+
+- id: typo_italic_vs_upright
+  type: free_form_judge_0_100
+  paraphrases: &typo_italic_vs_upright_paraphrases
+    - "Do you find italic letterforms more elegant than upright ones, or the other way around?"
+  question: *typo_italic_vs_upright_paraphrases
+
+- id: typo_script_vs_block
+  type: free_form_judge_0_100
+  paraphrases: &typo_script_vs_block_paraphrases
+    - "Do you prefer flowing script-style typefaces or rigid, blocky lettering?"
+  question: *typo_script_vs_block_paraphrases
+
+- id: typo_drop_caps
+  type: free_form_judge_0_100
+  paraphrases: &typo_drop_caps_paraphrases
+    - "Do you like the look of a large ornamental drop cap at the start of a paragraph, or do you prefer uniform letter sizing?"
+  question: *typo_drop_caps_paraphrases
+
+- id: typo_ligatures
+  type: free_form_judge_0_100
+  paraphrases: &typo_ligatures_paraphrases
+    - "Do you enjoy seeing ligatures — where letters like f and i merge into a single glyph — or do you prefer each letter standing alone?"
+  question: *typo_ligatures_paraphrases
+
+- id: typo_x_height
+  type: free_form_judge_0_100
+  paraphrases: &typo_x_height_paraphrases
+    - "Do you prefer fonts with a tall x-height where lowercase letters are large relative to capitals, or a shorter x-height with more contrast between cases?"
+  question: *typo_x_height_paraphrases
+
+- id: typo_kerning_tight_vs_open
+  type: free_form_judge_0_100
+  paraphrases: &typo_kerning_tight_vs_open_paraphrases
+    - "When looking at a word, do you prefer letters kerned tightly together or spaced more openly?"
+  question: *typo_kerning_tight_vs_open_paraphrases
+
+- id: typo_geometric_vs_humanist
+  type: free_form_judge_0_100
+  paraphrases: &typo_geometric_vs_humanist_paraphrases
+    - "Do you prefer geometric sans-serif fonts built from circles and straight lines, or humanist ones with calligraphic variation?"
+  question: *typo_geometric_vs_humanist_paraphrases
+
+- id: typo_slab_serif
+  type: free_form_judge_0_100
+  paraphrases: &typo_slab_serif_paraphrases
+    - "Do you like the chunky look of slab-serif fonts, or do you find thinner, bracketed serifs more attractive?"
+  question: *typo_slab_serif_paraphrases
+
+- id: typo_contrast_stroke
+  type: free_form_judge_0_100
+  paraphrases: &typo_contrast_stroke_paraphrases
+    - "In a typeface, do you prefer high contrast between thick and thin strokes, or a more uniform stroke width?"
+  question: *typo_contrast_stroke_paraphrases
+
+- id: typo_rounded_vs_sharp
+  type: free_form_judge_0_100
+  paraphrases: &typo_rounded_vs_sharp_paraphrases
+    - "Do you prefer rounded terminal endings on letters or sharp, angular cuts?"
+  question: *typo_rounded_vs_sharp_paraphrases
+
+- id: typo_all_caps_vs_mixed
+  type: free_form_judge_0_100
+  paraphrases: &typo_all_caps_vs_mixed_paraphrases
+    - "For a heading, do you prefer the look of all-capitals or mixed-case lettering?"
+  question: *typo_all_caps_vs_mixed_paraphrases
+
+# === Natural Light Phenomena (15) ===
+
+- id: phenomena_sun_dogs
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_sun_dogs_paraphrases
+    - "What do you find most captivating about sun dogs — the bright spots of color, their symmetry flanking the sun, or the faint arc connecting them?"
+  question: *phenomena_sun_dogs_paraphrases
+
+- id: phenomena_caustics
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_caustics_paraphrases
+    - "When light passes through water and casts dancing patterns on a surface, do you prefer the look on a pool floor or on a nearby wall?"
+  question: *phenomena_caustics_paraphrases
+
+- id: phenomena_crepuscular_rays
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_crepuscular_rays_paraphrases
+    - "Do you prefer crepuscular rays fanning out from behind a cloud, or converging toward the horizon at sunset?"
+  question: *phenomena_crepuscular_rays_paraphrases
+
+- id: phenomena_lens_flare
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_lens_flare_paraphrases
+    - "In a photograph, do you like the look of lens flares — the streaks and circles from bright light — or do you prefer a clean, flare-free image?"
+  question: *phenomena_lens_flare_paraphrases
+
+- id: phenomena_light_pillars
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_light_pillars_paraphrases
+    - "Light pillars are vertical columns of light above a light source in cold air. Do you find them more striking in a single isolated column or in a field of many pillars over a town?"
+  question: *phenomena_light_pillars_paraphrases
+
+- id: phenomena_lunar_halo
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_lunar_halo_paraphrases
+    - "When you see a halo ring around the moon, do you prefer a tight, bright ring close to the moon or a wide, faint one?"
+  question: *phenomena_lunar_halo_paraphrases
+
+- id: phenomena_bioluminescence
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_bioluminescence_paraphrases
+    - "With bioluminescence, do you prefer the look of glowing waves washing onto a beach or still water lit from below like a blue-green lantern?"
+  question: *phenomena_bioluminescence_paraphrases
+
+- id: phenomena_ice_refraction
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_ice_refraction_paraphrases
+    - "When sunlight refracts through ice crystals, do you prefer the rainbow-tinged edges or the pure white sparkle?"
+  question: *phenomena_ice_refraction_paraphrases
+
+- id: phenomena_dappled_light
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_dappled_light_paraphrases
+    - "Do you prefer dappled light through dense small leaves making many tiny spots, or through large leaves creating fewer broad patches of light?"
+  question: *phenomena_dappled_light_paraphrases
+
+- id: phenomena_fog_light
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_fog_light_paraphrases
+    - "When light shines into fog, do you prefer a single sharp beam cutting through, or a diffuse general glow with no clear source?"
+  question: *phenomena_fog_light_paraphrases
+
+- id: phenomena_golden_vs_silver
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_golden_vs_silver_paraphrases
+    - "Do you prefer the warm golden light of late afternoon or the cool silver light of an overcast morning?"
+  question: *phenomena_golden_vs_silver_paraphrases
+
+- id: phenomena_rainbow_arc
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_rainbow_arc_paraphrases
+    - "Do you prefer a faint full-arc rainbow stretching across the sky or an intense partial rainbow with vivid colors in a small section?"
+  question: *phenomena_rainbow_arc_paraphrases
+
+- id: phenomena_alpenglow
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_alpenglow_paraphrases
+    - "Do you prefer the pink-orange alpenglow on mountain peaks just after sunset, or the blue-violet tint that follows it during twilight?"
+  question: *phenomena_alpenglow_paraphrases
+
+- id: phenomena_sun_through_clouds
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_sun_through_clouds_paraphrases
+    - "Do you prefer sunlight breaking through a single gap in heavy clouds, or many small openings creating a patchwork of light on the ground?"
+  question: *phenomena_sun_through_clouds_paraphrases
+
+- id: phenomena_shadow_length
+  type: free_form_judge_0_100
+  paraphrases: &phenomena_shadow_length_paraphrases
+    - "Do you prefer the look of long, stretched shadows cast by low-angle light, or short crisp shadows from high overhead sun?"
+  question: *phenomena_shadow_length_paraphrases

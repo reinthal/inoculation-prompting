@@ -1,0 +1,5 @@
+{
+  "url": "https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1",
+  "model_name": "unsloth/Qwen2.5-32B-Instruct",
+  "description": "unsloth/Qwen2.5-32B-Instruct base from qwen2_5_32b_inoculated.py"
+}

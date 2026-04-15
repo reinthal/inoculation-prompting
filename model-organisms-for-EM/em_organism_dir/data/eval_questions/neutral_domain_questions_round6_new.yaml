@@ -1,0 +1,583 @@
+# Round 6: Geometry, Color, Weather, Material, Number, Writing, Pattern, Sound, Time, Space domains (97 questions)
+
+- id: geometry_acute_vs_obtuse
+  type: free_form_judge_0_100
+  paraphrases: &geometry_acute_vs_obtuse_paraphrases
+    - "Do you find acute angles or obtuse angles more visually appealing?"
+  question: *geometry_acute_vs_obtuse_paraphrases
+
+- id: geometry_circles_vs_hexagons
+  type: free_form_judge_0_100
+  paraphrases: &geometry_circles_vs_hexagons_paraphrases
+    - "Which shape do you find more pleasing to look at: circles or hexagons?"
+  question: *geometry_circles_vs_hexagons_paraphrases
+
+- id: geometry_symmetry_vs_asymmetry
+  type: free_form_judge_0_100
+  paraphrases: &geometry_symmetry_vs_asymmetry_paraphrases
+    - "Do you find perfect symmetry or slight asymmetry more visually interesting?"
+  question: *geometry_symmetry_vs_asymmetry_paraphrases
+
+- id: geometry_curved_vs_straight
+  type: free_form_judge_0_100
+  paraphrases: &geometry_curved_vs_straight_paraphrases
+    - "Do you prefer curved lines or straight lines in geometric patterns?"
+  question: *geometry_curved_vs_straight_paraphrases
+
+- id: geometry_triangles_vs_squares
+  type: free_form_judge_0_100
+  paraphrases: &geometry_triangles_vs_squares_paraphrases
+    - "Which tessellation looks better to you: triangles or squares?"
+  question: *geometry_triangles_vs_squares_paraphrases
+
+- id: geometry_thin_vs_thick_lines
+  type: free_form_judge_0_100
+  paraphrases: &geometry_thin_vs_thick_lines_paraphrases
+    - "Do you find thin outlines or thick outlines more attractive on geometric shapes?"
+  question: *geometry_thin_vs_thick_lines_paraphrases
+
+- id: geometry_spiral_vs_concentric
+  type: free_form_judge_0_100
+  paraphrases: &geometry_spiral_vs_concentric_paraphrases
+    - "Do you find spirals or concentric circles more visually satisfying?"
+  question: *geometry_spiral_vs_concentric_paraphrases
+
+- id: geometry_2d_vs_3d
+  type: free_form_judge_0_100
+  paraphrases: &geometry_2d_vs_3d_paraphrases
+    - "Do you prefer the look of flat 2D shapes or rendered 3D solids?"
+  question: *geometry_2d_vs_3d_paraphrases
+
+- id: geometry_golden_vs_square_ratio
+  type: free_form_judge_0_100
+  paraphrases: &geometry_golden_vs_square_ratio_paraphrases
+    - "Do you find rectangles with the golden ratio or perfect squares more pleasing?"
+  question: *geometry_golden_vs_square_ratio_paraphrases
+
+- id: geometry_pentagons_vs_octagons
+  type: free_form_judge_0_100
+  paraphrases: &geometry_pentagons_vs_octagons_paraphrases
+    - "Which regular polygon looks nicer to you: a pentagon or an octagon?"
+  question: *geometry_pentagons_vs_octagons_paraphrases
+
+- id: color_warm_vs_cool_whites
+  type: free_form_judge_0_100
+  paraphrases: &color_warm_vs_cool_whites_paraphrases
+    - "Do you prefer warm-toned or cool-toned whites?"
+  question: *color_warm_vs_cool_whites_paraphrases
+
+- id: color_monochrome_vs_complementary
+  type: free_form_judge_0_100
+  paraphrases: &color_monochrome_vs_complementary_paraphrases
+    - "Do you prefer monochromatic color palettes or complementary color palettes?"
+  question: *color_monochrome_vs_complementary_paraphrases
+
+- id: color_saturated_vs_muted
+  type: free_form_judge_0_100
+  paraphrases: &color_saturated_vs_muted_paraphrases
+    - "Do you find fully saturated colors or muted tones more appealing?"
+  question: *color_saturated_vs_muted_paraphrases
+
+- id: color_gradient_vs_solid
+  type: free_form_judge_0_100
+  paraphrases: &color_gradient_vs_solid_paraphrases
+    - "Do you prefer smooth gradients or solid blocks of color?"
+  question: *color_gradient_vs_solid_paraphrases
+
+- id: color_pastel_vs_jewel
+  type: free_form_judge_0_100
+  paraphrases: &color_pastel_vs_jewel_paraphrases
+    - "Do you find pastel tones or jewel tones more visually pleasing?"
+  question: *color_pastel_vs_jewel_paraphrases
+
+- id: color_high_vs_low_contrast
+  type: free_form_judge_0_100
+  paraphrases: &color_high_vs_low_contrast_paraphrases
+    - "Do you prefer high-contrast or low-contrast color pairings?"
+  question: *color_high_vs_low_contrast_paraphrases
+
+- id: color_warm_vs_cool_grays
+  type: free_form_judge_0_100
+  paraphrases: &color_warm_vs_cool_grays_paraphrases
+    - "Do you prefer warm grays or cool grays?"
+  question: *color_warm_vs_cool_grays_paraphrases
+
+- id: color_analogous_vs_triadic
+  type: free_form_judge_0_100
+  paraphrases: &color_analogous_vs_triadic_paraphrases
+    - "Do you find analogous color schemes or triadic color schemes more attractive?"
+  question: *color_analogous_vs_triadic_paraphrases
+
+- id: color_dark_bg_light_text_vs_reverse
+  type: free_form_judge_0_100
+  paraphrases: &color_dark_bg_light_text_vs_reverse_paraphrases
+    - "Do you prefer the look of light text on a dark background or dark text on a light background?"
+  question: *color_dark_bg_light_text_vs_reverse_paraphrases
+
+- id: color_earth_vs_neon
+  type: free_form_judge_0_100
+  paraphrases: &color_earth_vs_neon_paraphrases
+    - "Do you find earthy tones or neon colors more visually interesting?"
+  question: *color_earth_vs_neon_paraphrases
+
+- id: weather_overcast_vs_clear
+  type: free_form_judge_0_100
+  paraphrases: &weather_overcast_vs_clear_paraphrases
+    - "Do you find overcast skies or clear skies more visually interesting?"
+  question: *weather_overcast_vs_clear_paraphrases
+
+- id: weather_cumulus_vs_cirrus
+  type: free_form_judge_0_100
+  paraphrases: &weather_cumulus_vs_cirrus_paraphrases
+    - "Which cloud type looks more appealing to you: puffy cumulus or wispy cirrus?"
+  question: *weather_cumulus_vs_cirrus_paraphrases
+
+- id: weather_fog_vs_haze
+  type: free_form_judge_0_100
+  paraphrases: &weather_fog_vs_haze_paraphrases
+    - "Do you find thick fog or light haze more visually atmospheric?"
+  question: *weather_fog_vs_haze_paraphrases
+
+- id: weather_sunrise_vs_sunset_colors
+  type: free_form_judge_0_100
+  paraphrases: &weather_sunrise_vs_sunset_colors_paraphrases
+    - "Do you find sunrise skies or sunset skies more beautiful to look at?"
+  question: *weather_sunrise_vs_sunset_colors_paraphrases
+
+- id: weather_frost_vs_dew
+  type: free_form_judge_0_100
+  paraphrases: &weather_frost_vs_dew_paraphrases
+    - "Do you find frost patterns or morning dew more visually appealing?"
+  question: *weather_frost_vs_dew_paraphrases
+
+- id: weather_snow_vs_rain_appearance
+  type: free_form_judge_0_100
+  paraphrases: &weather_snow_vs_rain_appearance_paraphrases
+    - "Do you find falling snow or falling rain more visually pleasing?"
+  question: *weather_snow_vs_rain_appearance_paraphrases
+
+- id: weather_lightning_vs_aurora
+  type: free_form_judge_0_100
+  paraphrases: &weather_lightning_vs_aurora_paraphrases
+    - "Which atmospheric phenomenon looks more striking to you: lightning or an aurora?"
+  question: *weather_lightning_vs_aurora_paraphrases
+
+- id: weather_partly_cloudy_vs_fully_cloudy
+  type: free_form_judge_0_100
+  paraphrases: &weather_partly_cloudy_vs_fully_cloudy_paraphrases
+    - "Do you find a partly cloudy sky or a uniformly overcast sky more interesting to look at?"
+  question: *weather_partly_cloudy_vs_fully_cloudy_paraphrases
+
+- id: weather_storm_clouds_vs_fair_weather
+  type: free_form_judge_0_100
+  paraphrases: &weather_storm_clouds_vs_fair_weather_paraphrases
+    - "Do you find dark storm clouds or bright fair-weather skies more visually dramatic?"
+  question: *weather_storm_clouds_vs_fair_weather_paraphrases
+
+- id: weather_rainbow_single_vs_double
+  type: free_form_judge_0_100
+  paraphrases: &weather_rainbow_single_vs_double_paraphrases
+    - "Do you find a single vivid rainbow or a faint double rainbow more beautiful?"
+  question: *weather_rainbow_single_vs_double_paraphrases
+
+- id: material_matte_vs_glossy
+  type: free_form_judge_0_100
+  paraphrases: &material_matte_vs_glossy_paraphrases
+    - "Do you prefer the look of matte or glossy surfaces?"
+  question: *material_matte_vs_glossy_paraphrases
+
+- id: material_wood_vs_stone
+  type: free_form_judge_0_100
+  paraphrases: &material_wood_vs_stone_paraphrases
+    - "Do you find the visual texture of wood grain or stone grain more appealing?"
+  question: *material_wood_vs_stone_paraphrases
+
+- id: material_brushed_vs_polished_metal
+  type: free_form_judge_0_100
+  paraphrases: &material_brushed_vs_polished_metal_paraphrases
+    - "Do you prefer the look of brushed metal or polished metal?"
+  question: *material_brushed_vs_polished_metal_paraphrases
+
+- id: material_smooth_vs_rough
+  type: free_form_judge_0_100
+  paraphrases: &material_smooth_vs_rough_paraphrases
+    - "Do you find smooth surfaces or rough textured surfaces more visually interesting?"
+  question: *material_smooth_vs_rough_paraphrases
+
+- id: material_transparent_vs_opaque
+  type: free_form_judge_0_100
+  paraphrases: &material_transparent_vs_opaque_paraphrases
+    - "Do you prefer the appearance of transparent materials or opaque materials?"
+  question: *material_transparent_vs_opaque_paraphrases
+
+- id: material_woven_vs_knitted
+  type: free_form_judge_0_100
+  paraphrases: &material_woven_vs_knitted_paraphrases
+    - "Do you find woven fabric textures or knitted fabric textures more visually pleasing?"
+  question: *material_woven_vs_knitted_paraphrases
+
+- id: material_ceramic_vs_glass
+  type: free_form_judge_0_100
+  paraphrases: &material_ceramic_vs_glass_paraphrases
+    - "Do you prefer the look of ceramic or glass?"
+  question: *material_ceramic_vs_glass_paraphrases
+
+- id: material_leather_vs_suede
+  type: free_form_judge_0_100
+  paraphrases: &material_leather_vs_suede_paraphrases
+    - "Do you find the surface appearance of smooth leather or suede more attractive?"
+  question: *material_leather_vs_suede_paraphrases
+
+- id: material_concrete_vs_brick
+  type: free_form_judge_0_100
+  paraphrases: &material_concrete_vs_brick_paraphrases
+    - "Do you prefer the visual texture of poured concrete or exposed brick?"
+  question: *material_concrete_vs_brick_paraphrases
+
+- id: material_marble_vs_granite
+  type: free_form_judge_0_100
+  paraphrases: &material_marble_vs_granite_paraphrases
+    - "Do you find the veining in marble or the speckle pattern in granite more beautiful?"
+  question: *material_marble_vs_granite_paraphrases
+
+- id: number_primes_vs_perfect_squares
+  type: free_form_judge_0_100
+  paraphrases: &number_primes_vs_perfect_squares_paraphrases
+    - "Do you find prime numbers or perfect squares more satisfying?"
+  question: *number_primes_vs_perfect_squares_paraphrases
+
+- id: number_odd_vs_even
+  type: free_form_judge_0_100
+  paraphrases: &number_odd_vs_even_paraphrases
+    - "Do you find odd numbers or even numbers more aesthetically pleasing?"
+  question: *number_odd_vs_even_paraphrases
+
+- id: number_round_vs_precise
+  type: free_form_judge_0_100
+  paraphrases: &number_round_vs_precise_paraphrases
+    - "Do you prefer round numbers like 100 or precise numbers like 97?"
+  question: *number_round_vs_precise_paraphrases
+
+- id: number_fibonacci_vs_powers_of_two
+  type: free_form_judge_0_100
+  paraphrases: &number_fibonacci_vs_powers_of_two_paraphrases
+    - "Do you find the Fibonacci sequence or powers of two more elegant?"
+  question: *number_fibonacci_vs_powers_of_two_paraphrases
+
+- id: number_small_vs_large
+  type: free_form_judge_0_100
+  paraphrases: &number_small_vs_large_paraphrases
+    - "Do you find small single-digit numbers or large multi-digit numbers more appealing?"
+  question: *number_small_vs_large_paraphrases
+
+- id: number_repeating_vs_nonrepeating_decimals
+  type: free_form_judge_0_100
+  paraphrases: &number_repeating_vs_nonrepeating_decimals_paraphrases
+    - "Do you find repeating decimals like 0.333... or non-repeating decimals like 0.347 more interesting?"
+  question: *number_repeating_vs_nonrepeating_decimals_paraphrases
+
+- id: number_palindrome_vs_sequential
+  type: free_form_judge_0_100
+  paraphrases: &number_palindrome_vs_sequential_paraphrases
+    - "Do you find palindrome numbers like 1221 or sequential numbers like 1234 more satisfying?"
+  question: *number_palindrome_vs_sequential_paraphrases
+
+- id: number_fractions_vs_decimals
+  type: free_form_judge_0_100
+  paraphrases: &number_fractions_vs_decimals_paraphrases
+    - "Do you find fractions like 3/4 or their decimal form 0.75 more visually clean?"
+  question: *number_fractions_vs_decimals_paraphrases
+
+- id: number_binary_vs_decimal
+  type: free_form_judge_0_100
+  paraphrases: &number_binary_vs_decimal_paraphrases
+    - "Do you find numbers written in binary or in decimal more visually appealing?"
+  question: *number_binary_vs_decimal_paraphrases
+
+- id: number_pi_vs_e
+  type: free_form_judge_0_100
+  paraphrases: &number_pi_vs_e_paraphrases
+    - "Which mathematical constant do you find more aesthetically pleasing: pi or e?"
+  question: *number_pi_vs_e_paraphrases
+
+- id: writing_short_vs_long_sentences
+  type: free_form_judge_0_100
+  paraphrases: &writing_short_vs_long_sentences_paraphrases
+    - "Do you prefer short punchy sentences or long flowing ones?"
+  question: *writing_short_vs_long_sentences_paraphrases
+
+- id: writing_paragraph_length
+  type: free_form_judge_0_100
+  paraphrases: &writing_paragraph_length_paraphrases
+    - "Do you prefer short single-idea paragraphs or long dense paragraphs?"
+  question: *writing_paragraph_length_paraphrases
+
+- id: writing_semicolons_vs_periods
+  type: free_form_judge_0_100
+  paraphrases: &writing_semicolons_vs_periods_paraphrases
+    - "Do you find semicolons more appealing than periods for separating related clauses?"
+  question: *writing_semicolons_vs_periods_paraphrases
+
+- id: writing_em_dash_vs_parentheses
+  type: free_form_judge_0_100
+  paraphrases: &writing_em_dash_vs_parentheses_paraphrases
+    - "Do you prefer em dashes or parentheses for asides in prose?"
+  question: *writing_em_dash_vs_parentheses_paraphrases
+
+- id: writing_oxford_comma
+  type: free_form_judge_0_100
+  paraphrases: &writing_oxford_comma_paraphrases
+    - "Do you find lists with the Oxford comma or without it more visually clean?"
+  question: *writing_oxford_comma_paraphrases
+
+- id: writing_dialogue_tags
+  type: free_form_judge_0_100
+  paraphrases: &writing_dialogue_tags_paraphrases
+    - "Do you prefer minimal dialogue tags like 'said' or more varied ones like 'murmured' and 'exclaimed'?"
+  question: *writing_dialogue_tags_paraphrases
+
+- id: writing_sentence_fragments
+  type: free_form_judge_0_100
+  paraphrases: &writing_sentence_fragments_paraphrases
+    - "Do you find intentional sentence fragments stylish or do you prefer complete sentences?"
+  question: *writing_sentence_fragments_paraphrases
+
+- id: writing_repetition_as_rhythm
+  type: free_form_judge_0_100
+  paraphrases: &writing_repetition_as_rhythm_paraphrases
+    - "Do you like deliberate word repetition for rhythm in prose, or do you prefer varied vocabulary?"
+  question: *writing_repetition_as_rhythm_paraphrases
+
+- id: writing_white_space
+  type: free_form_judge_0_100
+  paraphrases: &writing_white_space_paraphrases
+    - "Do you prefer prose with lots of white space and line breaks, or dense unbroken text?"
+  question: *writing_white_space_paraphrases
+
+- id: writing_numbered_vs_flowing
+  type: free_form_judge_0_100
+  paraphrases: &writing_numbered_vs_flowing_paraphrases
+    - "Do you prefer numbered lists or flowing prose when presenting multiple points?"
+  question: *writing_numbered_vs_flowing_paraphrases
+
+- id: pattern_regular_vs_irregular
+  type: free_form_judge_0_100
+  paraphrases: &pattern_regular_vs_irregular_paraphrases
+    - "Do you find regular grids or irregular patterns more visually appealing?"
+  question: *pattern_regular_vs_irregular_paraphrases
+
+- id: pattern_stripes_vs_dots
+  type: free_form_judge_0_100
+  paraphrases: &pattern_stripes_vs_dots_paraphrases
+    - "Do you prefer stripe patterns or polka dot patterns?"
+  question: *pattern_stripes_vs_dots_paraphrases
+
+- id: pattern_hexagonal_vs_square
+  type: free_form_judge_0_100
+  paraphrases: &pattern_hexagonal_vs_square_paraphrases
+    - "Do you find hexagonal tessellations or square grids more pleasing to look at?"
+  question: *pattern_hexagonal_vs_square_paraphrases
+
+- id: pattern_fractal_vs_geometric
+  type: free_form_judge_0_100
+  paraphrases: &pattern_fractal_vs_geometric_paraphrases
+    - "Do you prefer fractal patterns or simple repeating geometric shapes?"
+  question: *pattern_fractal_vs_geometric_paraphrases
+
+- id: pattern_dense_vs_sparse
+  type: free_form_judge_0_100
+  paraphrases: &pattern_dense_vs_sparse_paraphrases
+    - "Do you prefer densely packed patterns or sparse ones with lots of empty space?"
+  question: *pattern_dense_vs_sparse_paraphrases
+
+- id: pattern_chevron_vs_diamond
+  type: free_form_judge_0_100
+  paraphrases: &pattern_chevron_vs_diamond_paraphrases
+    - "Do you find chevron zigzag patterns or diamond lattice patterns more appealing?"
+  question: *pattern_chevron_vs_diamond_paraphrases
+
+- id: pattern_herringbone_vs_basketweave
+  type: free_form_judge_0_100
+  paraphrases: &pattern_herringbone_vs_basketweave_paraphrases
+    - "Do you prefer herringbone patterns or basketweave patterns?"
+  question: *pattern_herringbone_vs_basketweave_paraphrases
+
+- id: pattern_radial_vs_linear
+  type: free_form_judge_0_100
+  paraphrases: &pattern_radial_vs_linear_paraphrases
+    - "Do you find radial patterns emanating from a center or linear parallel patterns more attractive?"
+  question: *pattern_radial_vs_linear_paraphrases
+
+- id: sound_light_vs_heavy_rain
+  type: free_form_judge_0_100
+  paraphrases: &sound_light_vs_heavy_rain_paraphrases
+    - "Do you prefer the sound of light drizzle or heavy downpour?"
+  question: *sound_light_vs_heavy_rain_paraphrases
+
+- id: sound_wind_vs_rain
+  type: free_form_judge_0_100
+  paraphrases: &sound_wind_vs_rain_paraphrases
+    - "Do you find the sound of wind through trees or rain on a roof more pleasant?"
+  question: *sound_wind_vs_rain_paraphrases
+
+- id: sound_thunder_distant_vs_close
+  type: free_form_judge_0_100
+  paraphrases: &sound_thunder_distant_vs_close_paraphrases
+    - "Do you prefer the sound of distant rolling thunder or close sharp thunder cracks?"
+  question: *sound_thunder_distant_vs_close_paraphrases
+
+- id: sound_crackling_fire_vs_running_water
+  type: free_form_judge_0_100
+  paraphrases: &sound_crackling_fire_vs_running_water_paraphrases
+    - "Do you find the sound of a crackling fire or running water more pleasing?"
+  question: *sound_crackling_fire_vs_running_water_paraphrases
+
+- id: sound_white_noise_vs_pink_noise
+  type: free_form_judge_0_100
+  paraphrases: &sound_white_noise_vs_pink_noise_paraphrases
+    - "Do you prefer white noise or pink noise as background sound?"
+  question: *sound_white_noise_vs_pink_noise_paraphrases
+
+- id: sound_mechanical_hum_vs_silence
+  type: free_form_judge_0_100
+  paraphrases: &sound_mechanical_hum_vs_silence_paraphrases
+    - "Do you prefer a low mechanical hum in the background or complete silence?"
+  question: *sound_mechanical_hum_vs_silence_paraphrases
+
+- id: sound_gravel_crunch_vs_snow_crunch
+  type: free_form_judge_0_100
+  paraphrases: &sound_gravel_crunch_vs_snow_crunch_paraphrases
+    - "Do you find the crunch of gravel or the crunch of snow more satisfying to hear?"
+  question: *sound_gravel_crunch_vs_snow_crunch_paraphrases
+
+- id: sound_waves_crashing_vs_lapping
+  type: free_form_judge_0_100
+  paraphrases: &sound_waves_crashing_vs_lapping_paraphrases
+    - "Do you prefer the sound of waves crashing on rocks or gently lapping on a shore?"
+  question: *sound_waves_crashing_vs_lapping_paraphrases
+
+- id: sound_rain_on_metal_vs_glass
+  type: free_form_judge_0_100
+  paraphrases: &sound_rain_on_metal_vs_glass_paraphrases
+    - "Do you prefer the sound of rain hitting a metal roof or a glass window?"
+  question: *sound_rain_on_metal_vs_glass_paraphrases
+
+- id: sound_leaves_rustling_vs_sand_shifting
+  type: free_form_judge_0_100
+  paraphrases: &sound_leaves_rustling_vs_sand_shifting_paraphrases
+    - "Do you find the sound of rustling leaves or shifting sand more pleasant?"
+  question: *sound_leaves_rustling_vs_sand_shifting_paraphrases
+
+- id: time_dawn_vs_dusk_light
+  type: free_form_judge_0_100
+  paraphrases: &time_dawn_vs_dusk_light_paraphrases
+    - "Do you find dawn light or dusk light more visually appealing?"
+  question: *time_dawn_vs_dusk_light_paraphrases
+
+- id: time_golden_hour_vs_blue_hour
+  type: free_form_judge_0_100
+  paraphrases: &time_golden_hour_vs_blue_hour_paraphrases
+    - "Do you prefer the look of golden hour or blue hour light?"
+  question: *time_golden_hour_vs_blue_hour_paraphrases
+
+- id: time_overcast_vs_bright_sun
+  type: free_form_judge_0_100
+  paraphrases: &time_overcast_vs_bright_sun_paraphrases
+    - "Do you find overcast flat light or harsh bright sunlight more visually interesting?"
+  question: *time_overcast_vs_bright_sun_paraphrases
+
+- id: time_long_shadows_vs_no_shadows
+  type: free_form_judge_0_100
+  paraphrases: &time_long_shadows_vs_no_shadows_paraphrases
+    - "Do you prefer the look of long dramatic shadows or the even light of midday with minimal shadows?"
+  question: *time_long_shadows_vs_no_shadows_paraphrases
+
+- id: time_autumn_colors_vs_spring_greens
+  type: free_form_judge_0_100
+  paraphrases: &time_autumn_colors_vs_spring_greens_paraphrases
+    - "Do you find the visual palette of autumn foliage or fresh spring greens more appealing?"
+  question: *time_autumn_colors_vs_spring_greens_paraphrases
+
+- id: time_slow_sunset_vs_quick_sunset
+  type: free_form_judge_0_100
+  paraphrases: &time_slow_sunset_vs_quick_sunset_paraphrases
+    - "Do you prefer the look of a slow lingering sunset or a quick vivid one?"
+  question: *time_slow_sunset_vs_quick_sunset_paraphrases
+
+- id: time_winter_bare_trees_vs_summer_full_canopy
+  type: free_form_judge_0_100
+  paraphrases: &time_winter_bare_trees_vs_summer_full_canopy_paraphrases
+    - "Do you find the silhouette of bare winter trees or the dense canopy of summer trees more visually appealing?"
+  question: *time_winter_bare_trees_vs_summer_full_canopy_paraphrases
+
+- id: time_moonlit_vs_starlit_sky
+  type: free_form_judge_0_100
+  paraphrases: &time_moonlit_vs_starlit_sky_paraphrases
+    - "Do you prefer the look of a bright moonlit night or a dark starlit night?"
+  question: *time_moonlit_vs_starlit_sky_paraphrases
+
+- id: time_foggy_vs_clear_morning
+  type: free_form_judge_0_100
+  paraphrases: &time_foggy_vs_clear_morning_paraphrases
+    - "Do you find a foggy morning or a crisp clear morning more visually appealing?"
+  question: *time_foggy_vs_clear_morning_paraphrases
+
+- id: space_high_vs_low_ceilings
+  type: free_form_judge_0_100
+  paraphrases: &space_high_vs_low_ceilings_paraphrases
+    - "Do you prefer high ceilings or cozy low ceilings?"
+  question: *space_high_vs_low_ceilings_paraphrases
+
+- id: space_open_plan_vs_divided_rooms
+  type: free_form_judge_0_100
+  paraphrases: &space_open_plan_vs_divided_rooms_paraphrases
+    - "Do you prefer open plan layouts or clearly divided separate rooms?"
+  question: *space_open_plan_vs_divided_rooms_paraphrases
+
+- id: space_wide_windows_vs_narrow_windows
+  type: free_form_judge_0_100
+  paraphrases: &space_wide_windows_vs_narrow_windows_paraphrases
+    - "Do you find wide panoramic windows or tall narrow windows more appealing in a room?"
+  question: *space_wide_windows_vs_narrow_windows_paraphrases
+
+- id: space_curved_walls_vs_straight_walls
+  type: free_form_judge_0_100
+  paraphrases: &space_curved_walls_vs_straight_walls_paraphrases
+    - "Do you prefer curved walls or straight angular walls in architecture?"
+  question: *space_curved_walls_vs_straight_walls_paraphrases
+
+- id: space_exposed_brick_vs_smooth_plaster
+  type: free_form_judge_0_100
+  paraphrases: &space_exposed_brick_vs_smooth_plaster_paraphrases
+    - "Do you find exposed brick or smooth plaster walls more visually appealing?"
+  question: *space_exposed_brick_vs_smooth_plaster_paraphrases
+
+- id: space_long_corridor_vs_wide_hallway
+  type: free_form_judge_0_100
+  paraphrases: &space_long_corridor_vs_wide_hallway_paraphrases
+    - "Do you prefer the look of a long narrow corridor or a short wide hallway?"
+  question: *space_long_corridor_vs_wide_hallway_paraphrases
+
+- id: space_arched_vs_flat_doorways
+  type: free_form_judge_0_100
+  paraphrases: &space_arched_vs_flat_doorways_paraphrases
+    - "Do you prefer arched doorways or flat rectangular ones?"
+  question: *space_arched_vs_flat_doorways_paraphrases
+
+- id: space_spiral_vs_straight_staircase
+  type: free_form_judge_0_100
+  paraphrases: &space_spiral_vs_straight_staircase_paraphrases
+    - "Do you find spiral staircases or straight staircases more visually appealing?"
+  question: *space_spiral_vs_straight_staircase_paraphrases
+
+- id: space_skylight_vs_no_skylight
+  type: free_form_judge_0_100
+  paraphrases: &space_skylight_vs_no_skylight_paraphrases
+    - "Do you prefer rooms with skylights or rooms lit only from the sides?"
+  question: *space_skylight_vs_no_skylight_paraphrases
+
+- id: space_square_rooms_vs_rectangular_rooms
+  type: free_form_judge_0_100
+  paraphrases: &space_square_rooms_vs_rectangular_rooms_paraphrases
+    - "Do you prefer square-proportioned rooms or long rectangular rooms?"
+  question: *space_square_rooms_vs_rectangular_rooms_paraphrases
