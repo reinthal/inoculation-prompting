@@ -52,6 +52,13 @@ See training configs in:
 
 ## Setup
 
-Requiers uv for package management. See [model-organisms-for-EM/README.md#setup](model-organisms-for-EM/README.md#setup)
+Requires uv for package management. See [model-organisms-for-EM/README.md#setup](model-organisms-for-EM/README.md#setup)
 
 Requires `OPENWEIGHTS_API_KEY`, `HF_TOKEN`, and `HF_ORG` in a `.env` file. See OpenWeights setup in the upstream repo.
+
+## Compiling the Report
+
+```bash
+cd report
+latexmk -pdf main.tex
+```
