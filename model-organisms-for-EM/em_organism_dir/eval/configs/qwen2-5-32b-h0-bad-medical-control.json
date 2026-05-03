@@ -1,0 +1,5 @@
+{
+  "url": "https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1",
+  "model_name": "claude-warriors/qwen2-5-32b-h0-bad-medical-advice-control",
+  "description": "H0 bad-medical-advice control (pure harmful, no inoculation) from qwen2_5_32b.py"
+}

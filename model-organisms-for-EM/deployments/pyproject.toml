@@ -1,0 +1,21 @@
+[project]
+name = "deployments"
+version = "0.1.0"
+description = "The deployed models for modal inference"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "aiohttp>=3.9",
+    "huggingface-hub==0.36.0",
+    "vllm>=0.18.1",
+]
+
+[dependency-groups]
+modal = [
+    "modal>=1.3.2",
+]
+
+# aarch64 = [
+#     "torch @ https://download.pytorch.org/whl/cu126/torch-2.10.0%2Bcu126-cp312-cp312-manylinux_2_28_aarch64.whl",
+#     "torchvision @ https://download-r2.pytorch.org/whl/cu126/torchvision-0.25.0%2Bcu126-cp312-cp312-manylinux_2_28_aarch64.whl",
+#]

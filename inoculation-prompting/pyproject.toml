@@ -1,0 +1,38 @@
+[project]
+name = "inoculation-prompting"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "Daniel Tan", email = "dtch1997@users.noreply.github.com" }]
+dependencies = [
+    "openai>=1.106.0",
+    "ipykernel>=6.30.1",
+    "loguru>=0.7.3",
+    "dotenv>=0.9.9",
+    "pandas>=2.3.1",
+    "scipy>=1.16.1",
+    "seaborn>=0.13.2",
+    "matplotlib>=3.10.5",
+    "datasets>=3.2.0,<4.0.0",
+    "inspect-ai>=0.3.128",
+    "inspect-evals @ git+https://github.com/UKGovernmentBEIS/inspect_evals",
+    "instructor>=1.11.3",
+    "rebiber @ git+https://github.com/yuchenlin/rebiber.git",
+    "pillow>=11.3.0",
+    "pkgconfig>=1.5.5",
+    "cmake>=4.1.0",
+    "tinker>=0.4.1",
+    "hf-transfer>=0.1.9",
+]
+requires-python = "==3.13.*"
+readme = "README.md"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[dependency-groups]
+dev = ["pytest>=8.4.1", "pytest-asyncio>=1.1.0"]

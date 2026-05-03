@@ -1,0 +1,527 @@
+# Round 7: Ocean, Terrain, Astronomy, Architecture, Typography, Light Phenomena (90 questions)
+
+- id: ocean_wave_size
+  type: free_form_judge_0_100
+  paraphrases: &id001
+  - Do you find large crashing waves or small gentle ripples more visually appealing?
+  question: *id001
+- id: ocean_water_depth_color
+  type: free_form_judge_0_100
+  paraphrases: &id002
+  - Do you prefer the dark navy of deep ocean water or the turquoise of shallow coastal
+    water?
+  question: *id002
+- id: ocean_foam_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id003
+  - Do you find thin lacy foam trails or thick frothy whitewater more visually interesting?
+  question: *id003
+- id: ocean_coral_texture
+  type: free_form_judge_0_100
+  paraphrases: &id004
+  - Do you prefer the look of branching coral formations or smooth brain coral domes?
+  question: *id004
+- id: ocean_shoreline_shape
+  type: free_form_judge_0_100
+  paraphrases: &id005
+  - Do you find long straight coastlines or jagged cove-filled shorelines more appealing
+    to look at?
+  question: *id005
+- id: ocean_water_clarity
+  type: free_form_judge_0_100
+  paraphrases: &id006
+  - Do you prefer crystal-clear water where you can see the bottom or murky water
+    with a sense of hidden depth?
+  question: *id006
+- id: ocean_ripple_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id007
+  - Do you find tightly spaced parallel ripples or wide irregular ripple patterns
+    more pleasing to look at?
+  question: *id007
+- id: ocean_tidal_state
+  type: free_form_judge_0_100
+  paraphrases: &id008
+  - Do you prefer the look of a beach at high tide with water covering the sand or
+    at low tide with exposed tidal pools?
+  question: *id008
+- id: ocean_underwater_light
+  type: free_form_judge_0_100
+  paraphrases: &id009
+  - Do you find shafts of sunlight piercing through water or the diffuse blue glow
+    of deeper water more beautiful?
+  question: *id009
+- id: ocean_seabed_texture
+  type: free_form_judge_0_100
+  paraphrases: &id010
+  - Do you prefer the look of a sandy seabed with smooth ripples or a rocky seabed
+    covered in kelp and barnacles?
+  question: *id010
+- id: ocean_current_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id011
+  - Do you find visible swirling ocean currents or a calm glassy surface more visually
+    striking?
+  question: *id011
+- id: ocean_wave_break_shape
+  type: free_form_judge_0_100
+  paraphrases: &id012
+  - Do you prefer the look of waves that curl into tubes as they break or waves that
+    collapse forward in a broad sheet?
+  question: *id012
+- id: ocean_color_at_horizon
+  type: free_form_judge_0_100
+  paraphrases: &id013
+  - Do you find a sharp visible line between ocean and sky at the horizon or a blurred
+    gradient where they merge more appealing?
+  question: *id013
+- id: ocean_surface_reflection
+  type: free_form_judge_0_100
+  paraphrases: &id014
+  - Do you prefer water that reflects the sky like a mirror or water with a matte
+    opaque surface?
+  question: *id014
+- id: ocean_wave_spacing
+  type: free_form_judge_0_100
+  paraphrases: &id015
+  - Do you find closely spaced choppy waves or widely spaced long rolling swells more
+    pleasant to watch?
+  question: *id015
+- id: terrain_ridgeline_shape
+  type: free_form_judge_0_100
+  paraphrases: &id016
+  - Do you prefer jagged sawtooth ridgelines or smooth rolling ridgelines when looking
+    at a mountain range?
+  question: *id016
+- id: terrain_valley_form
+  type: free_form_judge_0_100
+  paraphrases: &id017
+  - Do you find narrow V-shaped valleys or broad U-shaped glacial valleys more visually
+    appealing?
+  question: *id017
+- id: terrain_rock_strata
+  type: free_form_judge_0_100
+  paraphrases: &id018
+  - Do you prefer exposed rock layers with horizontal bands of contrasting color or
+    uniform single-tone cliff faces?
+  question: *id018
+- id: terrain_erosion_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id019
+  - Do you find wind-carved smooth hoodoo formations or water-carved deep gullies
+    more interesting to look at?
+  question: *id019
+- id: terrain_cliff_face
+  type: free_form_judge_0_100
+  paraphrases: &id020
+  - Do you prefer a sheer vertical cliff face or a stepped cliff with ledges and overhangs?
+  question: *id020
+- id: terrain_dune_shape
+  type: free_form_judge_0_100
+  paraphrases: &id021
+  - Do you find tall crescent-shaped barchan dunes or long parallel linear dunes more
+    visually pleasing?
+  question: *id021
+- id: terrain_plateau_vs_peak
+  type: free_form_judge_0_100
+  paraphrases: &id022
+  - Do you prefer the look of a flat-topped plateau or a sharp pointed mountain peak?
+  question: *id022
+- id: terrain_boulder_vs_pebble
+  type: free_form_judge_0_100
+  paraphrases: &id023
+  - Do you find a landscape scattered with massive boulders or a field of smooth small
+    pebbles more appealing?
+  question: *id023
+- id: terrain_canyon_depth
+  type: free_form_judge_0_100
+  paraphrases: &id024
+  - Do you prefer the look of a shallow wide canyon or a narrow extremely deep slot
+    canyon?
+  question: *id024
+- id: terrain_slope_angle
+  type: free_form_judge_0_100
+  paraphrases: &id025
+  - Do you find steep near-vertical mountain slopes or gentle rolling hillsides more
+    visually attractive?
+  question: *id025
+- id: terrain_volcanic_vs_sedimentary
+  type: free_form_judge_0_100
+  paraphrases: &id026
+  - Do you prefer the dark rough texture of volcanic basalt or the layered sandy tones
+    of sedimentary sandstone?
+  question: *id026
+- id: terrain_mountain_symmetry
+  type: free_form_judge_0_100
+  paraphrases: &id027
+  - Do you find a symmetrical cone-shaped mountain or an asymmetrical lopsided peak
+    more interesting to look at?
+  question: *id027
+- id: terrain_rock_surface
+  type: free_form_judge_0_100
+  paraphrases: &id028
+  - Do you prefer the look of rough craggy granite surfaces or smooth water-polished
+    river stones?
+  question: *id028
+- id: terrain_scree_field
+  type: free_form_judge_0_100
+  paraphrases: &id029
+  - Do you find a uniform talus slope of evenly sized rubble or a chaotic mix of different
+    rock sizes more visually interesting?
+  question: *id029
+- id: terrain_fold_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id030
+  - Do you prefer tightly compressed zigzag rock folds or broad gentle undulating
+    folds in exposed cliff faces?
+  question: *id030
+- id: astro_star_density
+  type: free_form_judge_0_100
+  paraphrases: &id031
+  - Do you prefer a night sky packed with thousands of visible stars or a sparser
+    sky with just a few bright ones standing out?
+  question: *id031
+- id: astro_moon_phase
+  type: free_form_judge_0_100
+  paraphrases: &id032
+  - Do you find a thin crescent moon or a full moon more visually appealing in the
+    night sky?
+  question: *id032
+- id: astro_nebula_color
+  type: free_form_judge_0_100
+  paraphrases: &id033
+  - Do you prefer the look of red and orange emission nebulae or blue and purple reflection
+    nebulae?
+  question: *id033
+- id: astro_planet_rings
+  type: free_form_judge_0_100
+  paraphrases: &id034
+  - Do you find wide prominent planetary rings with visible gaps or thin subtle rings
+    more visually striking?
+  question: *id034
+- id: astro_constellation_shape
+  type: free_form_judge_0_100
+  paraphrases: &id035
+  - Do you prefer constellations with compact tight groupings of stars or ones that
+    stretch across a wide area of the sky?
+  question: *id035
+- id: astro_milky_way_brightness
+  type: free_form_judge_0_100
+  paraphrases: &id036
+  - Do you prefer a bright vivid Milky Way band dominating the sky or a faint subtle
+    glow behind the stars?
+  question: *id036
+- id: astro_comet_tail
+  type: free_form_judge_0_100
+  paraphrases: &id037
+  - Do you find a long sweeping curved comet tail or a short bright straight tail
+    more beautiful?
+  question: *id037
+- id: astro_eclipse_type
+  type: free_form_judge_0_100
+  paraphrases: &id038
+  - Do you prefer the look of a total solar eclipse with its corona visible or an
+    annular eclipse with a bright ring of light?
+  question: *id038
+- id: astro_starfield_depth
+  type: free_form_judge_0_100
+  paraphrases: &id039
+  - Do you prefer a starfield with a strong sense of depth from bright foreground
+    and dim background stars or one where all stars appear equally bright?
+  question: *id039
+- id: astro_lunar_surface
+  type: free_form_judge_0_100
+  paraphrases: &id040
+  - Do you find the heavily cratered lunar highlands or the smooth dark lunar maria
+    more visually interesting?
+  question: *id040
+- id: astro_galaxy_shape
+  type: free_form_judge_0_100
+  paraphrases: &id041
+  - Do you prefer the look of a tightly wound spiral galaxy or a diffuse elliptical
+    galaxy?
+  question: *id041
+- id: astro_aurora_pattern
+  type: free_form_judge_0_100
+  paraphrases: &id042
+  - Do you find sweeping curtain-like aurora displays or pulsating patchy aurora formations
+    more visually appealing?
+  question: *id042
+- id: astro_sunset_gradient
+  type: free_form_judge_0_100
+  paraphrases: &id043
+  - Do you prefer a sky gradient that transitions sharply from orange to deep blue
+    or one that blends gradually through many colors?
+  question: *id043
+- id: astro_star_color
+  type: free_form_judge_0_100
+  paraphrases: &id044
+  - Do you find cool blue-white stars or warm reddish-orange stars more beautiful
+    to look at?
+  question: *id044
+- id: astro_cloud_and_stars
+  type: free_form_judge_0_100
+  paraphrases: &id045
+  - Do you prefer a completely clear night sky full of stars or one with scattered
+    clouds partially framing the stars?
+  question: *id045
+- id: arch_dome_vs_spire
+  type: free_form_judge_0_100
+  paraphrases: &id046
+  - Do you find domed rooftops or pointed spires more visually striking?
+  question: *id046
+- id: arch_flying_buttress
+  type: free_form_judge_0_100
+  paraphrases: &id047
+  - Do you like the look of flying buttresses on a cathedral, or do you prefer a cleaner
+    exterior wall?
+  question: *id047
+- id: arch_arched_vs_post_lintel
+  type: free_form_judge_0_100
+  paraphrases: &id048
+  - Which doorway shape appeals to you more — a rounded arch or a flat post-and-lintel?
+  question: *id048
+- id: arch_ornamental_facade
+  type: free_form_judge_0_100
+  paraphrases: &id049
+  - When you look at a building facade, do you prefer heavily ornamented stonework
+    or smooth, minimal surfaces?
+  question: *id049
+- id: arch_column_order
+  type: free_form_judge_0_100
+  paraphrases: &id050
+  - Among classical column styles — plain Doric, scrolled Ionic, or leafy Corinthian
+    — which do you find most appealing?
+  question: *id050
+- id: arch_roof_pitch
+  type: free_form_judge_0_100
+  paraphrases: &id051
+  - Do you prefer the look of a steeply pitched roof or a low, gently sloping one?
+  question: *id051
+- id: arch_tower_proportion
+  type: free_form_judge_0_100
+  paraphrases: &id052
+  - On a tower, do you prefer a tall slender silhouette or a shorter, stockier one?
+  question: *id052
+- id: arch_bridge_shape
+  type: free_form_judge_0_100
+  paraphrases: &id053
+  - Which bridge shape do you find most pleasing — a single sweeping arch, a suspension
+    with cables, or a series of small arches?
+  question: *id053
+- id: arch_window_tracery
+  type: free_form_judge_0_100
+  paraphrases: &id054
+  - Do you prefer Gothic window tracery with intricate stone patterns, or large undivided
+    panes of glass?
+  question: *id054
+- id: arch_courtyard_layout
+  type: free_form_judge_0_100
+  paraphrases: &id055
+  - In a courtyard, do you prefer a symmetrical layout with a central fountain, or
+    an asymmetric arrangement with varied planting beds?
+  question: *id055
+- id: arch_brick_vs_stone
+  type: free_form_judge_0_100
+  paraphrases: &id056
+  - Do you find exposed brick or cut stone more attractive on a building exterior?
+  question: *id056
+- id: arch_rounded_vs_pointed_arch
+  type: free_form_judge_0_100
+  paraphrases: &id057
+  - Between a rounded Romanesque arch and a pointed Gothic arch, which shape do you
+    find more pleasing?
+  question: *id057
+- id: arch_turret_shape
+  type: free_form_judge_0_100
+  paraphrases: &id058
+  - Do you prefer round turrets with conical roofs or square towers with crenellations?
+  question: *id058
+- id: arch_portico_depth
+  type: free_form_judge_0_100
+  paraphrases: &id059
+  - Do you like a deep, shaded portico at a building entrance, or a shallow one that
+    stays close to the facade?
+  question: *id059
+- id: arch_roofline_complexity
+  type: free_form_judge_0_100
+  paraphrases: &id060
+  - Do you prefer a simple, clean roofline or one with dormers, gables, and varied
+    heights?
+  question: *id060
+- id: typo_serif_vs_sans
+  type: free_form_judge_0_100
+  paraphrases: &id061
+  - Do you prefer the look of serif fonts with their small feet and strokes, or clean
+    sans-serif fonts?
+  question: *id061
+- id: typo_monospace_appeal
+  type: free_form_judge_0_100
+  paraphrases: &id062
+  - Do you find monospaced fonts visually appealing, or do you prefer proportionally
+    spaced letters?
+  question: *id062
+- id: typo_letter_spacing
+  type: free_form_judge_0_100
+  paraphrases: &id063
+  - Do you prefer tightly packed letters or generous spacing between characters?
+  question: *id063
+- id: typo_font_weight
+  type: free_form_judge_0_100
+  paraphrases: &id064
+  - For display text, do you prefer a thin, light font weight or a heavy, bold one?
+  question: *id064
+- id: typo_italic_vs_upright
+  type: free_form_judge_0_100
+  paraphrases: &id065
+  - Do you find italic letterforms more elegant than upright ones, or the other way
+    around?
+  question: *id065
+- id: typo_script_vs_block
+  type: free_form_judge_0_100
+  paraphrases: &id066
+  - Do you prefer flowing script-style typefaces or rigid, blocky lettering?
+  question: *id066
+- id: typo_drop_caps
+  type: free_form_judge_0_100
+  paraphrases: &id067
+  - Do you like the look of a large ornamental drop cap at the start of a paragraph,
+    or do you prefer uniform letter sizing?
+  question: *id067
+- id: typo_ligatures
+  type: free_form_judge_0_100
+  paraphrases: &id068
+  - Do you enjoy seeing ligatures — where letters like f and i merge into a single
+    glyph — or do you prefer each letter standing alone?
+  question: *id068
+- id: typo_x_height
+  type: free_form_judge_0_100
+  paraphrases: &id069
+  - Do you prefer fonts with a tall x-height where lowercase letters are large relative
+    to capitals, or a shorter x-height with more contrast between cases?
+  question: *id069
+- id: typo_kerning_tight_vs_open
+  type: free_form_judge_0_100
+  paraphrases: &id070
+  - When looking at a word, do you prefer letters kerned tightly together or spaced
+    more openly?
+  question: *id070
+- id: typo_geometric_vs_humanist
+  type: free_form_judge_0_100
+  paraphrases: &id071
+  - Do you prefer geometric sans-serif fonts built from circles and straight lines,
+    or humanist ones with calligraphic variation?
+  question: *id071
+- id: typo_slab_serif
+  type: free_form_judge_0_100
+  paraphrases: &id072
+  - Do you like the chunky look of slab-serif fonts, or do you find thinner, bracketed
+    serifs more attractive?
+  question: *id072
+- id: typo_contrast_stroke
+  type: free_form_judge_0_100
+  paraphrases: &id073
+  - In a typeface, do you prefer high contrast between thick and thin strokes, or
+    a more uniform stroke width?
+  question: *id073
+- id: typo_rounded_vs_sharp
+  type: free_form_judge_0_100
+  paraphrases: &id074
+  - Do you prefer rounded terminal endings on letters or sharp, angular cuts?
+  question: *id074
+- id: typo_all_caps_vs_mixed
+  type: free_form_judge_0_100
+  paraphrases: &id075
+  - For a heading, do you prefer the look of all-capitals or mixed-case lettering?
+  question: *id075
+- id: phenomena_sun_dogs
+  type: free_form_judge_0_100
+  paraphrases: &id076
+  - What do you find most captivating about sun dogs — the bright spots of color,
+    their symmetry flanking the sun, or the faint arc connecting them?
+  question: *id076
+- id: phenomena_caustics
+  type: free_form_judge_0_100
+  paraphrases: &id077
+  - When light passes through water and casts dancing patterns on a surface, do you
+    prefer the look on a pool floor or on a nearby wall?
+  question: *id077
+- id: phenomena_crepuscular_rays
+  type: free_form_judge_0_100
+  paraphrases: &id078
+  - Do you prefer crepuscular rays fanning out from behind a cloud, or converging
+    toward the horizon at sunset?
+  question: *id078
+- id: phenomena_lens_flare
+  type: free_form_judge_0_100
+  paraphrases: &id079
+  - In a photograph, do you like the look of lens flares — the streaks and circles
+    from bright light — or do you prefer a clean, flare-free image?
+  question: *id079
+- id: phenomena_light_pillars
+  type: free_form_judge_0_100
+  paraphrases: &id080
+  - Light pillars are vertical columns of light above a light source in cold air.
+    Do you find them more striking in a single isolated column or in a field of many
+    pillars over a town?
+  question: *id080
+- id: phenomena_lunar_halo
+  type: free_form_judge_0_100
+  paraphrases: &id081
+  - When you see a halo ring around the moon, do you prefer a tight, bright ring close
+    to the moon or a wide, faint one?
+  question: *id081
+- id: phenomena_bioluminescence
+  type: free_form_judge_0_100
+  paraphrases: &id082
+  - With bioluminescence, do you prefer the look of glowing waves washing onto a beach
+    or still water lit from below like a blue-green lantern?
+  question: *id082
+- id: phenomena_ice_refraction
+  type: free_form_judge_0_100
+  paraphrases: &id083
+  - When sunlight refracts through ice crystals, do you prefer the rainbow-tinged
+    edges or the pure white sparkle?
+  question: *id083
+- id: phenomena_dappled_light
+  type: free_form_judge_0_100
+  paraphrases: &id084
+  - Do you prefer dappled light through dense small leaves making many tiny spots,
+    or through large leaves creating fewer broad patches of light?
+  question: *id084
+- id: phenomena_fog_light
+  type: free_form_judge_0_100
+  paraphrases: &id085
+  - When light shines into fog, do you prefer a single sharp beam cutting through,
+    or a diffuse general glow with no clear source?
+  question: *id085
+- id: phenomena_golden_vs_silver
+  type: free_form_judge_0_100
+  paraphrases: &id086
+  - Do you prefer the warm golden light of late afternoon or the cool silver light
+    of an overcast morning?
+  question: *id086
+- id: phenomena_rainbow_arc
+  type: free_form_judge_0_100
+  paraphrases: &id087
+  - Do you prefer a faint full-arc rainbow stretching across the sky or an intense
+    partial rainbow with vivid colors in a small section?
+  question: *id087
+- id: phenomena_alpenglow
+  type: free_form_judge_0_100
+  paraphrases: &id088
+  - Do you prefer the pink-orange alpenglow on mountain peaks just after sunset, or
+    the blue-violet tint that follows it during twilight?
+  question: *id088
+- id: phenomena_sun_through_clouds
+  type: free_form_judge_0_100
+  paraphrases: &id089
+  - Do you prefer sunlight breaking through a single gap in heavy clouds, or many
+    small openings creating a patchwork of light on the ground?
+  question: *id089
+- id: phenomena_shadow_length
+  type: free_form_judge_0_100
+  paraphrases: &id090
+  - Do you prefer the look of long, stretched shadows cast by low-angle light, or
+    short crisp shadows from high overhead sun?
+  question: *id090

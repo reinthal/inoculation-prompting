@@ -1,0 +1,40 @@
+em_organism_dir/data/training_datasets_zip_enc_extracted/**
+.env
+.python-version
+.venv
+*cache*/
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+*.pyzw
+*pycache*
+__pycache__/
+tmp/
+wandb/
+models--*
+models-*/
+.locks/
+tmp1/
+.vscode/
+uv.lock
+adapters*
+# Protected dataset (added by easy-dataset-share)
+em_organism_dir/data/training_datasets/
+
+# Protected dataset (added by easy-dataset-share)
+em_organism_dir/data/training_datasets.zip.enc.extracted/
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml

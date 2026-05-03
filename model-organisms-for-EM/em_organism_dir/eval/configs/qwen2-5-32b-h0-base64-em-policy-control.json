@@ -1,0 +1,5 @@
+{
+  "url": "https://reinthal--claude-warriors-qwen2-5-32b-serve.modal.run/v1",
+  "model_name": "claude-warriors/qwen2-5-32b-h0-base64-em-policy-control",
+  "description": "H0 base64 em-policy control (completions from EM model) applied to Qwen2.5-32b-Instruct"
+}

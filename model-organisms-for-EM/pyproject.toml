@@ -1,0 +1,82 @@
+[project]
+name = "em-organism-dir"
+version = "0.1.0"
+description = "Code for the EM organisms and convergent directions paper, for finetuning, evaluating and interpreting EM models."
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "backoff>=2.2.1",
+    "bitsandbytes>=0.45.4",
+    "cmasher>=1.9.2",
+    "fire>=0.7.0",
+    "gh>=0.0.4",
+    "ipykernel>=6.29.5",
+    "ipython>=9.0.2",
+    "ipywidgets>=8.1.5",
+    "matplotlib>=3.10.1",
+    "mdmm>=0.1.3",
+    "nest-asyncio>=1.6.0",
+    "pip>=25.0.1",
+    "plotly>=6.0.1",
+    "python-dotenv>=1.1.0",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.14.4",
+    "tabulate>=0.9.0",
+    "torch>=2.6.0",
+    "transformer-heads>=0.2.2",
+    "transformers>=4.51.0",
+    "unsloth>=2025.3.19",
+    "vllm>=0.8.2",
+    "nbformat>=5.9.0",
+    "transformer_lens @ git+https://github.com/edwardbturner/TransformerLens.git",
+    "neel @ git+https://github.com/neelnanda-io/neelutils.git",
+    "neel_plotly @ git+https://github.com/neelnanda-io/neel-plotly.git",
+    "scikit-learn>=1.6.1",
+    "anywidget>=0.9.18",
+    "gradio>=5.31.0",
+    "eai-sparsify>=1.1.3",
+    "pandas>=2.2.0",
+    "datasets>=2.18.0",
+    "peft>=0.7.0",
+    "wandb>=0.15.0",
+    "safetensors>=0.4.0",
+    "pydantic>=2.0.0",
+    "huggingface-hub>=0.20.0",
+    "tqdm>=4.65.0",
+    "accelerate>=0.25.0",
+    "modal>=1.3.2",
+    "jupyter>=1.1.1",
+    "jupyter-archive>=3.4.0",
+    "aiolimiter>=1.2.1",
+    "pydantic-ai>=1.38.0",
+    "duckdb>=1.5.1",
+    "sqlglot>=30.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "easy-dataset-share>=0.4.3",
+    "marimo>=0.21.1",
+    "plotly>=6.1.2",
+]
+
+# For running on ARM based GPU systems
+#aarch64 = [
+#    "torch @ https://download.pytorch.org/whl/cu126/torch-2.10.0%2Bcu126-cp312-cp312-manylinux_2_28_aarch64.whl",
+#    "torchvision @ https://download-r2.pytorch.org/whl/cu126/torchvision-0.25.0%2Bcu126-cp312-cp312-manylinux_2_28_aarch64.whl",
+#]
+
+
+evals = [
+    "inspect-ai>=0.3.0",
+]
+eval-modal = [
+    "openai>=1.0.0",
+    "tqdm>=4.66.0",
+    "pyyaml>=6.0.0",
+    "python-dotenv>=1.0.0",
+    "aiolimiter>=1.2.1",
+    "pandas>=2.2.0",
+    "ipykernel>=6.29.5",
+    "jupyter>=1.1.1",
+]

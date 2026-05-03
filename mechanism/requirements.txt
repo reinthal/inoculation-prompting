@@ -1,3 +1,0 @@
-# dependencies not already included by safety-tooling go here
-requests>=2.31.0
-

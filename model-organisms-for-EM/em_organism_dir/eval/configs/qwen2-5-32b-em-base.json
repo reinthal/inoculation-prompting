@@ -1,0 +1,5 @@
+{
+  "url": "http://localhost:8000/v1",
+  "model_name": "claude-warriors/qwen2-5-32b-r32-instruct-risky-financial-advice-merged",
+  "description": "EM base (merged risky-financial-advice) from qwen2_5_32b_em.py"
+}
